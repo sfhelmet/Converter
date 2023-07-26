@@ -1,15 +1,20 @@
-@startuml Alarm
-skinparam linetype polyline
-skinparam linetype ortho
-state active
-state error
+@startuml
+
 state idle
+state active {
+	state reading
+	state active_skip_config_entry <<entryPoint>>
+	state active_exit <<exitPoint>>
+}
+state error
 
 [*]  --->  idle
+active_skip_config_entry  --->  reading
 idle  --->  active : event(call, activate)
-idle  --->  active : event(call, 'skip configuring')
+idle  --->  active_skip_config_entry : event(call, 'skip configuring')
 error  --->  active : event(call, reset)
 active  --->  idle : event(call, deactivate)
 idle  --->  [*] : event(call, shutoff)
-active  --->  error
+active_exit  --->  error
+
 @enduml

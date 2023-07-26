@@ -1,11 +1,10 @@
 @startuml
 state active {
-    state configuring
-    configuring -> exitA <<exitPoint>>
+    state exitA <<exitPoint>>
+    state entry <<entryPoint>>
 }
 state error
 state idle
-state final
 
 [*] --> idle
 idle -> active : event(call, activate)
