@@ -1,0 +1,18 @@
+@startuml
+state active {
+    state configuring
+    configuring -> exitA <<exitPoint>>
+}
+state error
+state idle
+state final
+
+[*] --> idle
+idle -> active : event(call, activate)
+idle -> active_skip_config_entry : event(call, 'skip configuring')
+active -> idle : event(call, deactivate)
+idle --> [*] : event(call, shutoff)
+exitA --> error
+
+
+@enduml
