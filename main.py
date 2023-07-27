@@ -1,6 +1,6 @@
 '''
 When encounter comments, copy and paste the comments to the output file, then go next line.
-
+ignore prolog comments
 '''
 
 # read_data = ""
