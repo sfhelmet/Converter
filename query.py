@@ -1,16 +1,17 @@
 from pyswip import Prolog
+import os
 
-# Initialize Prolog
-prolog = Prolog()
+def main():
+  prolog = Prolog()
+  prolog.consult("decl.pl")
 
-# Import the knowledge base
-prolog.consult("decl.pl")
-
-# Query the Prolog knowledge base
-def query_relation(relations, X, Y):
+  def query_relation(relations, X, Y):
     query = f"{relations}({X}, {Y})"
     return list(prolog.query(query))
 
-print("Grandparents:")
-for result in query_relation("grandparent", "X", "Y"):
-    print(f"{result['X']} is the grandparent of {result['Y']}")
+  print("Superstate:")
+  for result in query_relation("superstate", "X", "Y"):
+    print(f"{result['X']} is the superstate of {result['Y']}")
+
+if __name__ == "__main__":
+  main()
