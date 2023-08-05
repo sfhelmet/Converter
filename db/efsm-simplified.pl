@@ -47,7 +47,7 @@ transition(reading, emergency, event(when, "tCurrent >= tThreshold"), nil, actio
 transition(reading, configuring, event(call, set), nil, nil).
 transition(emergency, reading, event(call, reset), nil, nil).
 transition(emergency, reading, nil, nil, nil).	% completed emergency
-transition(configuring, reading, event(call, done), "tThreshold > tCurrent", nil, nil).
+transition(configuring, reading, event(call, done), "tThreshold > tCurrent", nil).
 
 internal_transition(configuring, event(set, tThreshold), nil, action(exec, "doubleBeep();")).
 internal_transition(configuring, event(call, done), "tThreshold <= tCurrent", action(exec, "generateError();")).
