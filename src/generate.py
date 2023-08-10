@@ -33,27 +33,30 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
         elif transition.source == "__INIT":
             src = f"[*]"
         plantuml_code += f"{src} {arrow_type} {dest}"  
-        if transition.event:
-            pattern = r'event\((\w+),\s*["\']?([^"\']+)?["\']?\)'
-            matches = re.findall(pattern, transition.event)
-            type, event = matches[0]
-            if type == "call":
-                plantuml_code += f" : {event}"
-            else:
-                plantuml_code += f" : {type} {event}"
+        if transition.event or transition.guard or transition.action:
+            plantuml_code += " :"
+            if transition.event:
+                pattern = r'event\((\w+),\s*(?:b)?["\']?([^"\']+)?["\']?\)'
+                matches = re.findall(pattern, transition.event)
+                print(matches)
+                type, event = matches[0]
+                if type == "call":
+                    plantuml_code += f" {event}"
+                else:
+                    plantuml_code += f" {type} {event}"
 
-        if transition.guard:
-            plantuml_code += f" [{transition.guard}]"
+            if transition.guard:
+                plantuml_code += f" [{transition.guard}]"
 
-        if transition.action:
-            # There's always a b in front of function name
-            pattern = r'action\((\w+), b\s*["\']?((?:[^"\']+)|(?:"(?:\\.|[^"\\])*")|(?:\'(?:\\.|[^\'\\])*\'))["\']?\)'
-            matches = re.findall(pattern, transition.action)
-            type, action = matches[0] # try catch maybe?
-            if type == "exec":
-                plantuml_code += f" / {action[:-3]}"
-            else:
-                plantuml_code += f" /{transition.action}"
+            if transition.action:
+                # There's always a b in front of function name
+                pattern = r'action\((\w+), b\s*["\']?((?:[^"\']+)|(?:"(?:\\.|[^"\\])*")|(?:\'(?:\\.|[^\'\\])*\'))["\']?\)'
+                matches = re.findall(pattern, transition.action)
+                type, action = matches[0] # try catch maybe?
+                if type == "exec":
+                    plantuml_code += f" / {action[:-3]}"
+                else:
+                    plantuml_code += f" /{transition.action}"
 
         plantuml_code += "\n"
         arrow_type = " ---> "

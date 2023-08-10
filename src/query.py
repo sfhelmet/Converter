@@ -11,10 +11,16 @@ def __query_relation(relations, *args):
   for i in range(1, len(args)):
     query += f", {args[i]}"
   query += ")"
-  return list(prolog.query(query))
+  try:
+    results = list(prolog.query(query))
+  except:
+    print(f"Error: {relations} not found")
+    return []
+  return results
 
+#query_name
 def state(name):
-  return __query_relation("state", name)
+  return __query_relation("state", name) #name -> var_name
 
 def alias(name, alias):
   return __query_relation("alias", name, alias)
