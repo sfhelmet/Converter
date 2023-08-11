@@ -38,7 +38,6 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
             if transition.event:
                 pattern = r'event\((\w+),\s*(?:b)?["\']?([^"\']+)?["\']?\)'
                 matches = re.findall(pattern, transition.event)
-                print(matches)
                 type, event = matches[0]
                 if type == "call":
                     plantuml_code += f" {event}"
@@ -52,9 +51,13 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
                 # There's always a b in front of function name
                 pattern = r'action\((\w+), b\s*["\']?((?:[^"\']+)|(?:"(?:\\.|[^"\\])*")|(?:\'(?:\\.|[^\'\\])*\'))["\']?\)'
                 matches = re.findall(pattern, transition.action)
+                print(matches)
                 type, action = matches[0] # try catch maybe?
                 if type == "exec":
+                    # TODO: Run regex again for exec on echo()
                     plantuml_code += f" / {action[:-3]}"
+                elif type == "log":
+                    plantuml_code += f" / log {action}"
                 else:
                     plantuml_code += f" /{transition.action}"
 

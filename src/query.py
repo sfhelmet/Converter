@@ -14,7 +14,7 @@ def __query_relation(relations, *args):
   try:
     results = list(prolog.query(query))
   except:
-    print(f"Error: {relations} not found")
+    print(f"Warning: no {relations}s found")
     return []
   return results
 
