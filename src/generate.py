@@ -1,23 +1,15 @@
 from fact import State, Transition
 import re
-def generate_substates(states):
-    pass
+from parse import get_function_name, get_params, strip_binary
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     plantuml_code = "@startuml\n\n"
     for state in states:
-        if states[state].entries or states[state].exits or states[state].substates:
-            plantuml_code += f"state {states[state].name} {{\n"
-            for sub in states[state].substates:
-                plantuml_code += f"\tstate {sub}\n"
-            for entry in states[state].entries:
-                plantuml_code += f"\tstate {entry} <<entryPoint>>\n"
-            for exit in states[state].exits:
-                plantuml_code += f"\tstate {exit} <<exitPoint>>\n"
-            plantuml_code += "}\n"
-
-        elif states[state].superstate:
+        if states[state].superstate:
             continue
+
+        elif states[state].entries or states[state].exits or states[state].substates:
+            plantuml_code += generate_substates(states[state], states)
 
         else:
             plantuml_code += f"state {states[state].name}\n" if not states[state].is_final else ""
@@ -33,39 +25,62 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
         elif transition.source == "__INIT":
             src = f"[*]"
         plantuml_code += f"{src} {arrow_type} {dest}"  
+
         if transition.event or transition.guard or transition.action:
             plantuml_code += " :"
             if transition.event:
-                pattern = r'event\((\w+),\s*(?:b)?["\']?([^"\']+)?["\']?\)'
-                matches = re.findall(pattern, transition.event)
-                type, event = matches[0]
-                if type == "call":
-                    plantuml_code += f" {event}"
-                else:
-                    plantuml_code += f" {type} {event}"
+                plantuml_code += generate_event(transition)
 
             if transition.guard:
-                plantuml_code += f" [{transition.guard}]"
+                plantuml_code += f" [{strip_binary(transition.guard)}]"
 
             if transition.action:
-                # There's always a b in front of function name
-                pattern = r'action\((\w+), b\s*["\']?((?:[^"\']+)|(?:"(?:\\.|[^"\\])*")|(?:\'(?:\\.|[^\'\\])*\'))["\']?\)'
-                matches = re.findall(pattern, transition.action)
-                print(matches)
-                type, action = matches[0] # try catch maybe?
-                if type == "exec":
-                    # TODO: Run regex again for exec on echo()
-                    plantuml_code += f" / {action[:-3]}"
-                elif type == "log":
-                    plantuml_code += f" / log {action}"
-                else:
-                    plantuml_code += f" /{transition.action}"
-
+                plantuml_code += generate_action(transition)
+                
         plantuml_code += "\n"
         arrow_type = " ---> "
     plantuml_code += "\n@enduml\n"
     return plantuml_code
 
-def write_plantuml_code_to_file(plantuml_code, output_file):
+def generate_substates(state: State, states: dict[str:State], indent =  0) -> str:
+    indent_str = "\t" * indent
+    substate_code = f"{indent_str}state {state.name} {{\n"
+    
+    for entry in state.entries:
+        substate_code += f"{indent_str}\tstate {entry} <<entryPoint>>\n"
+    for exit in state.exits:
+        substate_code += f"{indent_str}\tstate {exit} <<exitPoint>>\n"
+    
+    for child in state.substates:
+        substate_code += generate_substates(states[child], states, indent + 1)
+
+    substate_code += indent_str + "}\n"
+    return substate_code
+
+def generate_event(transition: Transition) -> str:
+    # pattern = r'event\((\w+),\s*(?:b)?["\']?([^"\']+)?["\']?\)'
+    # matches = re.findall(pattern, transition.event)
+    type, event = get_params(transition.event)
+    if type == "call":
+        return f" {event}"
+    else:
+        return f" {type} {event}"
+
+def generate_action(transition: Transition) -> str:
+    # There's always a b in front of function name
+    # pattern = r'action\((\w+), b\s*["\']?((?:[^"\']+)|(?:"(?:\\.|[^"\\])*")|(?:\'(?:\\.|[^\'\\])*\'))["\']?\)'
+    # matches = re.findall(pattern, transition.action)
+    print(transition.action)
+    type, action = get_params(transition.action)
+    print(action)
+    if type == "exec":
+        return f" / {action}"
+    elif type == "log":
+        return f" / log {action}"
+    else:
+        return f" /{transition.action}"
+
+
+def write_plantuml_code_to_file(plantuml_code: str, output_file: str) -> None:
     with open(output_file, 'w') as file:
         file.write(plantuml_code)

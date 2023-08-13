@@ -1,20 +1,15 @@
 @startuml
 
-state idle
-state active {
-	state reading
-	state active_skip_config_entry <<entryPoint>>
-	state active_exit <<exitPoint>>
-}
-state error
 
-[*]  --->  idle
-active_skip_config_entry  --->  reading
-idle  --->  active : event(call, activate)
-idle  --->  active_skip_config_entry : event(call, 'skip configuring')
-error  --->  active : event(call, reset)
-active  --->  idle : event(call, deactivate)
-idle  --->  [*] : event(call, shutoff)
-active_exit  --->  error
+s31  --->  active_exit : / b'beep();'
+s71  --->  configuring : / b"echo('Configuring mode');"
+activated  --->  s11 : reset / log b"ABORT 'Make Siren Sound'"
+reading  --->  s71 : set / log b"ABORT 'Slow blinking red LED'"
+s11  --->  s12 : / b"echo('Exit Emergency');"
+configuring  --->  configuring : done [b'tThreshold <= tCurrent'] / b'generateError();'
+activated  --->  s21 : deactivate / log b"ABORT 'Make Siren Sound'"
+configuring  --->  configuring : set tThreshold / b'doubleBeep();'
+reading  --->  s91 : when b'tCurrent >= tThreshold' / log b"ABORT 'Slow blinking red LED'"
+configuring  --->  s31 : timeout b'2:00' / b"echo('Exit configuring mode');"
 
 @enduml
