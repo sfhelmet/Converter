@@ -1,6 +1,6 @@
-from fact import State, Transition
+from model.fact import State, Transition
 import re
-from parse import get_function_name, get_params, strip_binary
+from parse import get_params, strip_binary
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     plantuml_code = "@startuml\n\n"

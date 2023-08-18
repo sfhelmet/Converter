@@ -1,5 +1,5 @@
 import re
-from src.fact import *
+from model.fact import *
 
 def create_state(name, states):
     if name not in states:

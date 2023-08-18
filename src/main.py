@@ -1,8 +1,8 @@
 from query import *
-from fact import State, Transition
+from model.fact import State, Transition
 from generate import generate_plantuml, write_plantuml_code_to_file
 
-file_load("./db/egaparams.pl")
+file_load("./db/decl.pl")
 
 states = {}
 states_list = state("Name")
