@@ -44,17 +44,21 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
 
 def generate_substates(state: State, states: dict[str:State], indent =  0) -> str:
     indent_str = "\t" * indent
-    substate_code = f"{indent_str}state {state.name} {{\n"
-    
-    for entry in state.entries:
-        substate_code += f"{indent_str}\tstate {entry} <<entryPoint>>\n"
-    for exit in state.exits:
-        substate_code += f"{indent_str}\tstate {exit} <<exitPoint>>\n"
-    
-    for child in state.substates:
-        substate_code += generate_substates(states[child], states, indent + 1)
+    substate_code = f"{indent_str}state {state.name}"
 
-    substate_code += indent_str + "}\n"
+    if state.entries or state.exits or state.substates:
+        substate_code += " {\n"
+        for entry in state.entries:
+            substate_code += f"{indent_str}\tstate {entry} <<entryPoint>>\n"
+        for exit in state.exits:
+            substate_code += f"{indent_str}\tstate {exit} <<exitPoint>>\n"
+        
+        for child in state.substates:
+            substate_code += generate_substates(states[child], states, indent + 1)
+
+        substate_code += indent_str + "}"
+
+    substate_code += "\n"
     return substate_code
 
 def generate_event(transition: Transition) -> str:
@@ -70,9 +74,7 @@ def generate_action(transition: Transition) -> str:
     # There's always a b in front of function name
     # pattern = r'action\((\w+), b\s*["\']?((?:[^"\']+)|(?:"(?:\\.|[^"\\])*")|(?:\'(?:\\.|[^\'\\])*\'))["\']?\)'
     # matches = re.findall(pattern, transition.action)
-    print(transition.action)
     type, action = get_params(transition.action)
-    print(action)
     if type == "exec":
         return f" / {action}"
     elif type == "log":
