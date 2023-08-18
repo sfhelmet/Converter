@@ -1,4 +1,11 @@
-from model.fact import State, Transition
+import os
+import sys
+
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(root_path)
+
+from model.state import State
+from model.transition import Transition
 import re
 from parse import get_params, strip_binary
 

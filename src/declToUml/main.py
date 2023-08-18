@@ -1,6 +1,14 @@
+import os
+import sys
+
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(root_path)
+
+from model.state import State
+from model.transition import Transition
 from query import *
-from model.fact import State, Transition
 from generate import generate_plantuml, write_plantuml_code_to_file
+
 
 file_load("./db/decl.pl")
 
