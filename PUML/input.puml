@@ -1,0 +1,15 @@
+@startuml
+
+state idle
+state active
+state error
+
+state ---> hello : hello
+
+idle  --->  active: activate
+[*]  --->  idle
+active  --->  idle : deactivate
+error  --->  active : reset
+idle  --->  [*] : shutoff
+
+@enduml

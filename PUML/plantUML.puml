@@ -8,13 +8,13 @@ state active {
 }
 state error
 
-idle  --->  active : activate
 [*]  --->  idle
-active_skip_config_entry  --->  reading
 idle  --->  active_skip_config_entry : skip configuring
-active  --->  idle : deactivate
-error  --->  active : reset
 idle  --->  [*] : shutoff
+active  --->  idle : deactivate
+active_skip_config_entry  --->  reading
 active_exit  --->  error
+idle  --->  active : activate
+error  --->  active : reset
 
 @enduml
