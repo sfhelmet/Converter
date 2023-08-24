@@ -111,6 +111,6 @@ def parse_ega(ega: str):
         event = ega.strip()
 
     guard = ega[l_bracket + 1: r_bracket].strip() if l_bracket != -1 and r_bracket != -1 else None
-    action = ega[slash:].strip() if slash != -1 else None
+    action = ega[slash + 1:].strip() if slash != -1 else None
 
     return event, guard, action

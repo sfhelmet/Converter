@@ -55,11 +55,9 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         src = transition.source
         
         dest = transition.destination
-        event = transition.event if transition.event else "nil"
-        guard = transition.guard if transition.guard else "nil"
-        action = transition.action if transition.action else "nil"
-
-        # TODO: Map event types from puml to pl
+        event = 'event(call, "' + transition.event + '")' if transition.event else "nil"
+        guard = add_quote(transition.guard) if transition.guard else "nil"
+        action = 'action(log, "' + transition.action + '")' if transition.action else "nil"
 
         prolog_code += "transition(" + src + ", " + dest + ", " + event + ", " + guard + ", " + action + ").\n" 
 
@@ -69,4 +67,10 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 def write_prolog_code_to_file(prolog_code: str, output_file: str) -> None:
     with open(output_file, 'w') as file:
         file.write(prolog_code)
+
+def add_quote(string: str) -> str:
+    string.replace("'", "\'")
+    string.replace('"', '\"')
+
+    return '"' + string + '"'      
 
