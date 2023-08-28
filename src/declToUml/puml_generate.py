@@ -6,7 +6,6 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
-import re
 from parse import get_params, strip_binary
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
@@ -33,16 +32,19 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
             src = f"[*]"
         plantuml_code += f"{src} {arrow_type} {dest}"  
 
-        if transition.event or transition.guard or transition.action:
+        if transition.events or transition.guards or transition.actions:
             plantuml_code += " :"
-            if transition.event:
-                plantuml_code += generate_event(transition)
+            if transition.events:
+                plantuml_code += generate_events(transition.events)
 
-            if transition.guard:
-                plantuml_code += f" [{strip_binary(transition.guard)}]"
+            if transition.guards:
+                plantuml_code += f" [{generate_guards(transition.guards)}]"
 
-            if transition.action:
-                plantuml_code += generate_action(transition)
+            if transition.actions:
+                for action in transition.actions:
+                    print(action.type, action.parameter)
+                    pass
+                plantuml_code += generate_action(transition.actions)
                 
         plantuml_code += "\n"
         arrow_type = " ---> "
@@ -68,27 +70,43 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     substate_code += "\n"
     return substate_code
 
-def generate_event(transition: Transition) -> str:
-    # pattern = r'event\((\w+),\s*(?:b)?["\']?([^"\']+)?["\']?\)'
-    # matches = re.findall(pattern, transition.event)
-    type, event = get_params(transition.event)
-    if type == "call":
-        return f" {event}"
-    else:
-        return f" {type} {event}"
+def generate_events(events) -> str:
+    event_str = ""
+    for i in range(len(events)):
+        event = events[i]
 
-def generate_action(transition: Transition) -> str:
-    # There's always a b in front of function name
-    # pattern = r'action\((\w+), b\s*["\']?((?:[^"\']+)|(?:"(?:\\.|[^"\\])*")|(?:\'(?:\\.|[^\'\\])*\'))["\']?\)'
-    # matches = re.findall(pattern, transition.action)
-    type, action = get_params(transition.action)
-    if type == "exec":
-        return f" / {action}"
-    elif type == "log":
-        return f" / log {action}"
-    else:
-        return f" /{transition.action}"
+        if i != 0:
+            event_str += " ;"
 
+        if event.type == "call":
+            event_str += f" {event.parameter}"
+        else:
+            event_str += f" {event.type} {event.parameter}"
+
+    return event_str
+
+def generate_guards(guards) -> str:
+    guard_str = ""
+    for i in range(len(guards)):
+        guard = guards[i]
+
+        if i != 0:
+            guard_str += "; "
+        guard_str += f"{guard.condition}"
+
+    return guard_str
+
+def generate_action(actions) -> str:
+    action_str = " /"
+    for i in range(len(actions)):
+        action = actions[i]
+        
+        if i != 0:
+            action_str += "; "
+
+        action_str += f"{action.type} {action.parameter}"
+    
+    return action_str
 
 def write_plantuml_code_to_file(plantuml_code: str, output_file: str) -> None:
     with open(output_file, 'w') as file:

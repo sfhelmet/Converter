@@ -3,6 +3,7 @@
 state idle
 state active
 state error
+state state
 
 state ---> hello : hello
 

@@ -1,0 +1,1 @@
+DECODE_CONSTANT = "utf-8"

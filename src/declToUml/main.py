@@ -1,63 +1,14 @@
-import os
-import sys
-
-root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.append(root_path)
-
-from model.state import State
-from model.transition import Transition
 from query import *
-from generate import generate_plantuml, write_plantuml_code_to_file
+from puml_generate import generate_plantuml, write_plantuml_code_to_file
+from prolog_parser import parse_prolog
 
 
-file_load("./db/decl.pl")
+file_load("./db/tcs_flattened.pl")
 
-states = {}
-states_list = state("Name")
-
-for state in states_list:
-    states[state["Name"]] = (State(state["Name"]))
-
-transitions = set()
-transitions_list = transition("X", "Y", "E", "G", "A")
-
-for transition in transitions_list:
-    transitions.add(Transition(transition["X"], transition["Y"], transition["E"], transition["G"], transition["A"]))
-
-final_states = final("X")
-for final_state in final_states:
-    states[final_state["X"]].is_final = True
-
-initial_states = initial("X")
-for initial_state in initial_states:
-    states[initial_state["X"]].is_initial = True
-    transitions.add(Transition("__INIT", initial_state["X"]))
-
-superstate_pairs = superstate("Superstate", "Substate")
-for pair in superstate_pairs:
-    sup = pair["Superstate"]
-    sub = pair["Substate"]
-    states[sup].substates.add(sub)
-    states[sub] = State(sub)
-    states[sub].superstate = sup
-
-entries = entry_pseudostate("Entry", "Substate")
-for entry in entries:
-    sub = entry["Substate"]
-    entry_state = entry["Entry"]
-
-    states[states[sub].superstate].entries.add(entry_state)
-    transitions.add(Transition(entry_state, sub))
-    
-exits = exit_pseudostate("Exit", "Superstate")
-for exit in exits:
-    sup = exit["Superstate"]
-    exit_state = exit["Exit"]
-
-    states[sup].exits.add(exit_state)
+states, transitions = parse_prolog()
 
 uml_code = generate_plantuml(states, transitions)
-write_plantuml_code_to_file(uml_code, "./PUML/plantUML.puml")
+write_plantuml_code_to_file(uml_code, "./PUML/tcs_flattened.puml")
 
 
 

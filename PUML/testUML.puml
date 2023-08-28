@@ -4,7 +4,11 @@ state active {
     state entry <<entryPoint>>
 }
 state error
-state idle
+state idle: onextry: hello \n onexit: bye {
+    state exitB <<exitPoint>>
+    state entry <<entryPoint>>
+    state helllo
+}
 
 [*] --> idle
 idle -> active : event(call, activate)
