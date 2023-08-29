@@ -82,9 +82,12 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
         return None
     
     elif dest == "[*]":
-        dest = "final"
+        if len(superstate_stack) == 0:
+            dest = "final"
+        else:
+            dest = superstate_stack[-1] + "_final"
         if dest not in states:
-            new_state = State("final")
+            new_state = State(dest)
             new_state.is_final = True
             states[dest] = new_state
 
