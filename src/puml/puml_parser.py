@@ -6,14 +6,27 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
+from model.event import Event
+from model.guard import Guard
+from model.action import Action
+from enum import Enum
 
-def create_state(name, states):
-    if name not in states:
-        states[name] = State(name)
+class EventType(Enum):
+    CALL = "call"
+    SIGNAL = "signal"
+    TIME = "time"
+    CHANGE = "change"
 
-    return states[name]
+    INACTIVITY = "inactivity"
+    UPDATE = "update"
+    COMPLETION = "completion"
 
-def parse_plantuml_file(puml_file):
+class ActionType(Enum):
+    LOG = "log"
+
+EVENT_TYPES = {EventType.CALL, EventType.SIGNAL, EventType.TIME, EventType.CHANGE, EventType.INACTIVITY, EventType.UPDATE, EventType.COMPLETION} 
+
+def parse_plantuml(puml_file):
     states = {}
     transitions = set()
     superstate_stack = []
@@ -23,7 +36,7 @@ def parse_plantuml_file(puml_file):
             if line.strip():
                 line = line.strip()
 
-                if line.startswith('@'):
+                if line.startswith('@') or line.isspace():
                     continue
                 
                 elif line.startswith('}'):
@@ -58,7 +71,7 @@ def connect_superstate(state: State, superstate_stack: list[str], states: dict[s
 
         
 def parse_transition(transition: str, states: dict[str:State], transitions: set[Transition], superstate_stack) -> Transition:
-    event, guard, action = None, None, None
+    events, guards, actions = [], [] ,[]
     dash_index = transition.find("-")
     greater_index = transition.find(">")
     colon_index = transition.find(":")
@@ -69,7 +82,7 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
         dest = transition[greater_index + 1: colon_index].strip()
 
         ega = transition[colon_index + 1:]
-        event, guard, action = parse_ega(ega)
+        events, guards, actions = parse_ega(ega)
 
     if src not in states and src != "[*]":
         new_state = State(src)
@@ -93,7 +106,7 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
     connect_superstate(states[src], superstate_stack, states)
     connect_superstate(states[dest], superstate_stack, states)
     
-    new_transition = Transition(src, dest, event=event, guard=guard, action=action)
+    new_transition = Transition(src, dest, events=events, guards=guards, actions=actions)
     return new_transition
     
 def parse_ega(ega: str):
@@ -110,7 +123,22 @@ def parse_ega(ega: str):
     else:
         event = ega.strip()
 
-    guard = ega[l_bracket + 1: r_bracket].strip() if l_bracket != -1 and r_bracket != -1 else None
-    action = ega[slash + 1:].strip() if slash != -1 else None
+    guard = ega[l_bracket + 1: r_bracket].strip() if l_bracket != -1 and r_bracket != -1 else ""
+    action = ega[slash + 1:].strip() if slash != -1 else ""
 
-    return event, guard, action
+    events_str = event.split(";") if event else []
+    guards_str = guard.split(";") if guard else []
+    actions_str = action.split(";") if action else []
+
+    events = []
+    for event_str in events_str:
+        if event_str.split()[0] not in EVENT_TYPES:
+            events.append(Event("call", event_str))
+
+    guards = [Guard(condition) for condition in guards_str]
+
+    actions = []
+    for action_str in actions_str:
+        actions.append(Action("log", action_str))
+
+    return events, guards, actions

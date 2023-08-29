@@ -53,24 +53,33 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 
     for transition in transitions:
         src = transition.source
-        
         dest = transition.destination
-        event = 'event(call, "' + transition.event + '")' if transition.event else "nil"
-        guard = add_quote(transition.guard) if transition.guard else "nil"
-        action = 'action(log, "' + transition.action + '")' if transition.action else "nil"
 
-        prolog_code += "transition(" + src + ", " + dest + ", " + event + ", " + guard + ", " + action + ").\n" 
+        event_type = transition.events[0].type if len(transition.events) != 0 else "nil"
+        event_parameter = transition.events[0].parameter if len(transition.events) != 0 else "nil"
+        event_str = f'event({event_type}, "{event_parameter}")' if len(transition.events) != 0 else "nil"
+
+        if len(transition.guards) == 0:
+            guard_str = "nil"
+        else:
+            guard_str = '"'
+            for i in range(len(transition.guards)):
+                guard = transition.guards[i]
+                if i != 0:
+                    guard_str += "; "
+
+                guard_str += guard.condition
+            guard_str += '"'
+
+        actions_parameter_str = ""
+        for i in range(len(transition.actions)):
+            action = transition.actions[i]
+            if i != 0:
+                actions_parameter_str += "; "
+            actions_parameter_str += f'{action.parameter}'
+
+        action_str = f'action({transition.actions[0].type}, "{actions_parameter_str}")' if len(transition.actions) != 0 else "nil"
+
+        prolog_code += f"transition({src}, {dest}, {event_str}, {guard_str}, {action_str}).\n" 
 
     return prolog_code
-
-
-def write_prolog_code_to_file(prolog_code: str, output_file: str) -> None:
-    with open(output_file, 'w') as file:
-        file.write(prolog_code)
-
-def add_quote(string: str) -> str:
-    string.replace("'", "\'")
-    string.replace('"', '\"')
-
-    return '"' + string + '"'      
-

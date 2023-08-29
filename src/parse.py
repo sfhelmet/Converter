@@ -1,7 +1,4 @@
-from config import DECODE_CONSTANT
-
 def get_params(function: str) -> list[str]:
-  print("f", function)
   start_bracket = function.find("(")
   end_bracket = function.rfind(")")
 
@@ -13,9 +10,3 @@ def get_params(function: str) -> list[str]:
   
 def get_function_name(function: str) -> str:
   return function[:function.find("(")]
-
-def strip_binary(s) -> str:
-  if type(s) == str:
-    return s
-  else:
-    return s.decode(DECODE_CONSTANT)

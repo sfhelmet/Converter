@@ -6,7 +6,6 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
-from parse import get_params, strip_binary
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     plantuml_code = "@startuml\n\n"
@@ -41,9 +40,6 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
                 plantuml_code += f" [{generate_guards(transition.guards)}]"
 
             if transition.actions:
-                for action in transition.actions:
-                    print(action.type, action.parameter)
-                    pass
                 plantuml_code += generate_action(transition.actions)
                 
         plantuml_code += "\n"
@@ -107,7 +103,3 @@ def generate_action(actions) -> str:
         action_str += f"{action.type} {action.parameter}"
     
     return action_str
-
-def write_plantuml_code_to_file(plantuml_code: str, output_file: str) -> None:
-    with open(output_file, 'w') as file:
-        file.write(plantuml_code)

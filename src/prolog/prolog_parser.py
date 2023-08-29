@@ -9,7 +9,7 @@ from model.transition import Transition
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
-from query import *
+from prolog.query import *
 from parse import get_params
 
 def parse_prolog():
@@ -94,7 +94,6 @@ def parse_action(transition_action) -> list[Action]:
         actions_list = []
 
     else:
-        print(transition_action)
         actions_params = get_params(transition_action)
         action_type = actions_params[0].strip()
         action_parameter = bytes_to_string(actions_params[1])
@@ -104,6 +103,7 @@ def parse_action(transition_action) -> list[Action]:
             actions_list.append(Action(action_type, action.strip()))
 
     return actions_list
+
 def bytes_to_string(string):
   if str(type(string)) == "<class 'bytes'>":
       return string.decode("utf-8")
