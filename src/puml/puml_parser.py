@@ -9,22 +9,7 @@ from model.transition import Transition
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
-from enum import Enum
-
-class EventType(Enum):
-    CALL = "call"
-    SIGNAL = "signal"
-    TIME = "time"
-    CHANGE = "change"
-
-    INACTIVITY = "inactivity"
-    UPDATE = "update"
-    COMPLETION = "completion"
-
-class ActionType(Enum):
-    LOG = "log"
-
-EVENT_TYPES = {EventType.CALL, EventType.SIGNAL, EventType.TIME, EventType.CHANGE, EventType.INACTIVITY, EventType.UPDATE, EventType.COMPLETION} 
+from puml.puml_constants import EVENT_TYPES
 
 def parse_plantuml(puml_file):
     states = {}

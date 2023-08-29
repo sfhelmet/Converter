@@ -10,6 +10,7 @@ from model.event import Event
 from model.guard import Guard
 from model.action import Action
 from prolog.query import *
+from prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
 from parse import get_params
 
 def parse_prolog():
@@ -29,6 +30,14 @@ def parse_prolog():
 
         transitions.add(Transition(transition["X"], transition["Y"], event, guard, action))
 
+    superstate_pairs = get_superstate("Superstate", "Substate")
+    for pair in superstate_pairs:
+        sup = pair["Superstate"]
+        sub = pair["Substate"]
+        states[sup].substates.add(sub)
+        states[sub] = State(sub)
+        states[sub].superstate = sup
+
     final_states = get_final("X")
     for final_state in final_states:
         states[final_state["X"]].is_final = True
@@ -37,14 +46,6 @@ def parse_prolog():
     for initial_state in initial_states:
         states[initial_state["X"]].is_initial = True
         transitions.add(Transition("__INIT", initial_state["X"]))
-
-    superstate_pairs = get_superstate("Superstate", "Substate")
-    for pair in superstate_pairs:
-        sup = pair["Superstate"]
-        sub = pair["Substate"]
-        states[sup].substates.add(sub)
-        states[sub] = State(sub)
-        states[sub].superstate = sup
 
     entries = get_entry_pseudostate("Entry", "Substate")
     for entry in entries:
@@ -64,7 +65,7 @@ def parse_prolog():
     return states, transitions
 
 def parse_event(transition_event) -> list[Event]:
-    if transition_event == "nil":
+    if transition_event == NIL:
             event = []
 
     else:
@@ -76,7 +77,7 @@ def parse_event(transition_event) -> list[Event]:
     return event
 
 def parse_guard(transition_guard) -> list[Guard]:
-    if transition_guard == "nil":
+    if transition_guard == NIL:
         guards_list = []
 
     else:
@@ -90,7 +91,7 @@ def parse_guard(transition_guard) -> list[Guard]:
     return guards_list
 
 def parse_action(transition_action) -> list[Action]:
-    if transition_action == "nil":
+    if transition_action == NIL:
         actions_list = []
 
     else:
@@ -105,8 +106,8 @@ def parse_action(transition_action) -> list[Action]:
     return actions_list
 
 def bytes_to_string(string):
-  if str(type(string)) == "<class 'bytes'>":
-      return string.decode("utf-8")
+  if str(type(string)) == BYTES_TYPE_AS_STRING:
+      return string.decode(UTF8_CONSTANT)
   if string.startswith("b'") or string.startswith('b"'):
     return str(string)[2:-1]
   return string

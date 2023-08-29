@@ -6,19 +6,7 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
-
-from enum import Enum
-
-
-class Event(Enum):
-    CALL = "call"
-    SIGNAL = "signal"
-    TIME = "time"
-    CHANGE = "change"
-
-    INACTIVITY = "inactivity"
-    UPDATE = "update"
-    COMPLETION = "completion"
+from prolog.prolog_constants import NIL
 
 def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> str:
     prolog_code = ""
@@ -55,12 +43,12 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         src = transition.source
         dest = transition.destination
 
-        event_type = transition.events[0].type if len(transition.events) != 0 else "nil"
-        event_parameter = transition.events[0].parameter if len(transition.events) != 0 else "nil"
-        event_str = f'event({event_type}, "{event_parameter}")' if len(transition.events) != 0 else "nil"
+        event_type = transition.events[0].type if len(transition.events) != 0 else NIL
+        event_parameter = transition.events[0].parameter if len(transition.events) != 0 else NIL
+        event_str = f'event({event_type}, "{event_parameter}")' if len(transition.events) != 0 else NIL
 
         if len(transition.guards) == 0:
-            guard_str = "nil"
+            guard_str = NIL
         else:
             guard_str = '"'
             for i in range(len(transition.guards)):
@@ -78,7 +66,7 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
                 actions_parameter_str += "; "
             actions_parameter_str += f'{action.parameter}'
 
-        action_str = f'action({transition.actions[0].type}, "{actions_parameter_str}")' if len(transition.actions) != 0 else "nil"
+        action_str = f'action({transition.actions[0].type}, "{actions_parameter_str}")' if len(transition.actions) != 0 else NIL
 
         prolog_code += f"transition({src}, {dest}, {event_str}, {guard_str}, {action_str}).\n" 
 

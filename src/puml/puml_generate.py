@@ -6,6 +6,7 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
+from puml.puml_constants import SPECIAL_STATE, ENTRY_STEROTYPE, EXIT_STEROTYPE
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     plantuml_code = "@startuml\n\n"
@@ -26,9 +27,9 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
         dest = transition.destination
         src = transition.source
         if states.get(transition.destination, State('dummy')).is_final:
-            dest = f"[*]"
+            dest = SPECIAL_STATE
         elif transition.source == "__INIT":
-            src = f"[*]"
+            src = SPECIAL_STATE
         plantuml_code += f"{src} {arrow_type} {dest}"  
 
         if transition.events or transition.guards or transition.actions:
@@ -54,9 +55,9 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     if state.entries or state.exits or state.substates:
         substate_code += " {\n"
         for entry in state.entries:
-            substate_code += f"{indent_str}\tstate {entry} <<entryPoint>>\n"
+            substate_code += f"{indent_str}\tstate {entry} {ENTRY_STEROTYPE}\n"
         for exit in state.exits:
-            substate_code += f"{indent_str}\tstate {exit} <<exitPoint>>\n"
+            substate_code += f"{indent_str}\tstate {exit} {EXIT_STEROTYPE}\n"
         
         for child in state.substates:
             substate_code += generate_substates(states[child], states, indent + 1)
