@@ -7,3 +7,4 @@ class State:
         self.exits = set()
         self.superstate = None
         self.substates = set()
+        self.transitions = set()

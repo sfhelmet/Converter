@@ -46,7 +46,10 @@ def parse_plantuml(puml_file):
                 else:
                     new_transition = parse_transition(line, states, transitions, superstate_stack)
                     if new_transition:
-                        transitions.add(new_transition)
+                        if len(superstate_stack) != 0:
+                            states[superstate_stack].transitions.add(new_transition)
+                        else:
+                            transitions.add(new_transition)
     return states, transitions
 
 def connect_superstate(state: State, superstate_stack: list[str], states: dict[str:State]):

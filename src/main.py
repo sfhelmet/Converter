@@ -4,27 +4,27 @@ from puml.puml_generate import generate_plantuml
 from prolog.prolog_parser import parse_prolog
 from prolog.prolog_generate import generate_prolog
 
-input_file = "./puml/TCS.puml"
-output_file = "./db/output.pl"
+input_file = "./db/output.pl"
+output_file = "./puml/TCS.puml"
 
-input_language = ".puml"
-output_language = ".pl"
+input_language = input_file.split(".")[-1]
+output_language = output_file.split(".")[-1]
 
-if input_language == ".pl":
+if input_language == "pl":
     file_load(input_file) # Load prolog file
     states, transitions = parse_prolog()
 
-elif input_language == ".puml":
+elif input_language == "puml":
     states, transitions = parse_plantuml(input_file)
 
 else:
      print("Not Supported Yet")
 
 
-if output_language == ".pl":
+if output_language == "pl":
     sub_code = generate_prolog(states, transitions)
 
-elif output_language == ".puml":
+elif output_language == "puml":
     sub_code = generate_plantuml(states, transitions)
 
 else:

@@ -6,7 +6,7 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
-from puml.puml_constants import SPECIAL_STATE, ENTRY_STEROTYPE, EXIT_STEROTYPE
+from puml.puml_constants import SPECIAL_STATE, ENTRY_STEROTYPE, EXIT_STEROTYPE, ARROW_TYPE
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     plantuml_code = "@startuml\n\n"
@@ -22,31 +22,35 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
 
     plantuml_code += "\n"
 
-    arrow_type = " ---> "
     for transition in transitions:
-        dest = transition.destination
-        src = transition.source
-        if states.get(transition.destination, State('dummy')).is_final:
-            dest = SPECIAL_STATE
-        elif transition.source == "__INIT":
-            src = SPECIAL_STATE
-        plantuml_code += f"{src} {arrow_type} {dest}"  
-
-        if transition.events or transition.guards or transition.actions:
-            plantuml_code += " :"
-            if transition.events:
-                plantuml_code += generate_events(transition.events)
-
-            if transition.guards:
-                plantuml_code += f" [{generate_guards(transition.guards)}]"
-
-            if transition.actions:
-                plantuml_code += generate_action(transition.actions)
-                
+        plantuml_code += generate_transitions(transition, states)
         plantuml_code += "\n"
-        arrow_type = " ---> "
     plantuml_code += "\n@enduml\n"
     return plantuml_code
+
+def generate_transitions(transition, states):
+    plantuml_code = ""
+    dest = transition.destination
+    src = transition.source
+    if states.get(transition.destination, State('dummy')).is_final:
+        dest = SPECIAL_STATE
+    elif transition.source == "__INIT":
+        src = SPECIAL_STATE
+    plantuml_code += f"{src} {ARROW_TYPE} {dest}"  
+
+    if transition.events or transition.guards or transition.actions:
+        plantuml_code += " :"
+        if transition.events:
+            plantuml_code += generate_events(transition.events)
+
+        if transition.guards:
+            plantuml_code += f" [{generate_guards(transition.guards)}]"
+
+        if transition.actions:
+            plantuml_code += generate_action(transition.actions)
+    
+    return plantuml_code
+                
 
 def generate_substates(state: State, states: dict[str:State], indent =  0) -> str:
     indent_str = "\t" * indent
@@ -61,6 +65,9 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
         
         for child in state.substates:
             substate_code += generate_substates(states[child], states, indent + 1)
+
+        for transition in state.transitions:
+            substate_code += indent_str + "\t" + generate_transitions(transition, states) + "\n"
 
         substate_code += indent_str + "}"
 

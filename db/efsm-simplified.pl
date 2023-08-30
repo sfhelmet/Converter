@@ -33,6 +33,7 @@ initial(configuring).						% configuring is a level 2 state: i.o.w. superstate(_
 
 
 onentry_action(active, action(log, "Green LED ON")).
+
 onexit_action(active, action(log, "Green LED OFF")).
 onentry_action(configuring, action(exec, "echo('Configuring mode');")).
 onexit_action(configuring, action(exec, "echo('Exit configuring mode');")).

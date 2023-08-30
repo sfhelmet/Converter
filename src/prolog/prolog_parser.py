@@ -23,13 +23,6 @@ def parse_prolog():
     transitions = set()
     transitions_list = get_transition("X", "Y", "E", "G", "A")
 
-    for transition in transitions_list:
-        event = parse_event(transition["E"])
-        guard = parse_guard(transition["G"])
-        action = parse_action(transition["A"])
-
-        transitions.add(Transition(transition["X"], transition["Y"], event, guard, action))
-
     superstate_pairs = get_superstate("Superstate", "Substate")
     for pair in superstate_pairs:
         sup = pair["Superstate"]
@@ -37,6 +30,27 @@ def parse_prolog():
         states[sup].substates.add(sub)
         states[sub] = State(sub)
         states[sub].superstate = sup
+
+    for transition in transitions_list:
+        src = transition["X"]
+        dest = transition["Y"]
+        event = parse_event(transition["E"])
+        guard = parse_guard(transition["G"])
+        action = parse_action(transition["A"])
+        
+        new_transitions = Transition(src, dest, event, guard, action)
+        src_superstate = get_superstate("Sup", src)
+        dest_superstate = get_superstate("Sup", dest)
+        print("src", src_superstate, src)
+        print("dest", dest_superstate, dest)
+
+        if len(src_superstate) == 0 and len(dest_superstate) == 0:
+            transitions.add(new_transitions)
+
+        elif len(src_superstate) == 0:
+            states[states[dest].superstate].transitions.add(new_transitions)
+        else:
+            states[states[src].superstate].transitions.add(new_transitions)    
 
     final_states = get_final("X")
     for final_state in final_states:
