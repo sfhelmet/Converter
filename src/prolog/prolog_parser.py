@@ -84,7 +84,9 @@ def parse_prolog():
     for on_exit_action in on_exit_actions:
         state = on_exit_action["State"]
         action = on_exit_action["Action"]
-        print(state, action)
+        type = get_params(action)[0]
+        param = bytes_to_string(get_params(action)[1])
+        states[state].on_exit_action = Action(type, param)
 
     return states, transitions
 

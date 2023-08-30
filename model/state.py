@@ -9,3 +9,4 @@ class State:
         self.substates = set()
         self.transitions = set()
         self.choice = False
+        self.on_exit_action = None

@@ -58,7 +58,12 @@ def generate_transitions(transition, states):
 
 def generate_substates(state: State, states: dict[str:State], indent =  0) -> str:
     indent_str = "\t" * indent
-    substate_code = f"{indent_str}state {state.name}"
+    substate_code = ""
+    on_exit_action = state.on_exit_action
+    if on_exit_action:
+        substate_code += f'note "On Exit: {on_exit_action.type} {on_exit_action.parameter}\\n" as N_{state.name}\n'
+    
+    substate_code += f"{indent_str}state {state.name}"
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
 
@@ -75,7 +80,9 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
         for transition in state.transitions:
             substate_code += indent_str + "\t" + generate_transitions(transition, states) + "\n"
 
-        substate_code += indent_str + "}"
+        substate_code += indent_str + "}\n"
+        if on_exit_action:
+            substate_code += f"N_{state.name} --> {state.name}\n"
 
     substate_code += "\n"
     return substate_code
