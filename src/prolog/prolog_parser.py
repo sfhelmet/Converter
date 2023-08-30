@@ -55,9 +55,15 @@ def parse_prolog():
         states[final_state["X"]].is_final = True
 
     initial_states = get_initial("X")
+    i = 1
     for initial_state in initial_states:
         states[initial_state["X"]].is_initial = True
-        transitions.add(Transition("__INIT", initial_state["X"]))
+        superstate = get_superstate("Sup", initial_state["X"])
+        if len(superstate) == 0:
+            transitions.add(Transition(f"__INIT{i}", initial_state["X"]))
+        else:
+            states[superstate[0]['Sup']].transitions.add(Transition(f"__INIT{i}_{superstate[0]['Sup']}", initial_state["X"]))
+        i += 1
 
     entries = get_entry_pseudostate("Entry", "Substate")
     for entry in entries:
@@ -74,7 +80,15 @@ def parse_prolog():
 
         states[sup].exits.add(exit_state)
 
+    on_exit_actions = get_onexit_action("State", "Action")
+    for on_exit_action in on_exit_actions:
+        state = on_exit_action["State"]
+        action = on_exit_action["Action"]
+        print(state, action)
+
     return states, transitions
+
+    
 
 def parse_event(transition_event) -> list[Event]:
     if transition_event == NIL:

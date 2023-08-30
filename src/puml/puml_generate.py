@@ -38,7 +38,7 @@ def generate_transitions(transition, states):
     src = transition.source
     if states.get(transition.destination, State('dummy')).is_final:
         dest = SPECIAL_STATE
-    elif transition.source == "__INIT":
+    elif transition.source.startswith("__INIT"):
         src = SPECIAL_STATE
     plantuml_code += f"{src} {ARROW_TYPE} {dest}"  
 
