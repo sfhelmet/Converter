@@ -8,3 +8,4 @@ class State:
         self.superstate = None
         self.substates = set()
         self.transitions = set()
+        self.choice = False
