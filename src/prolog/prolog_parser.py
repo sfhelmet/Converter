@@ -41,8 +41,6 @@ def parse_prolog():
         new_transitions = Transition(src, dest, event, guard, action)
         src_superstate = get_superstate("Sup", src)
         dest_superstate = get_superstate("Sup", dest)
-        print("src", src_superstate, src)
-        print("dest", dest_superstate, dest)
 
         if len(src_superstate) == 0 and len(dest_superstate) == 0:
             transitions.add(new_transitions)
