@@ -9,4 +9,6 @@ class State:
         self.substates = set()
         self.transitions = set()
         self.choice = False
+        self.exit = False
+        self.entry = False
         self.on_exit_action = None

@@ -1,7 +1,10 @@
 from enum import Enum
 SPECIAL_STATE = "[*]"
-ENTRY_STEREOTYPE = "<<entryPoint>>"
-EXIT_STEREOTYPE = "<<exitPoint>>"
+ENTRY_STEREOTYPE = "entryPoint"
+EXIT_STEREOTYPE = "exitPoint"
+CHOICE_STEREOTYPE = "choice"
+ARROW_TYPE = "-->"
+
 class EventType(Enum):
     CALL = "call"
     SIGNAL = "signal"
@@ -15,5 +18,5 @@ class EventType(Enum):
 class ActionType(Enum):
     LOG = "log"
 EVENT_TYPES = {EventType.CALL, EventType.SIGNAL, EventType.TIME, EventType.CHANGE, EventType.INACTIVITY, EventType.UPDATE, EventType.COMPLETION} 
-ARROW_TYPE = "-->"
-CHOICE_STEREOTYPE = "choice"
+
+

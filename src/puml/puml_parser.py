@@ -9,7 +9,7 @@ from model.transition import Transition
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
-from puml.puml_constants import EVENT_TYPES, CHOICE_STEREOTYPE
+from src.puml.puml_constants import EVENT_TYPES, CHOICE_STEREOTYPE, ENTRY_STEREOTYPE, EXIT_STEREOTYPE
 
 def parse_plantuml(puml_file):
     states = {}
@@ -44,6 +44,12 @@ def parse_plantuml(puml_file):
                     stereotype = line[left_stereotype + 2:right_stereotype]
                     if stereotype == CHOICE_STEREOTYPE:
                         new_state.choice = True
+            
+                    if stereotype == ENTRY_STEREOTYPE:
+                        new_state.entry = True
+                        
+                    if stereotype == EXIT_STEREOTYPE:
+                        new_state.exit = True
 
                     if line.split()[-1] == "{":
                         superstate_stack.append(state_name)
