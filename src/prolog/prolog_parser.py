@@ -11,7 +11,7 @@ from model.guard import Guard
 from model.action import Action
 from prolog.query import *
 from prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
-from parse import get_params
+from src.util.parse import get_params
 
 def parse_prolog():
     states = {}

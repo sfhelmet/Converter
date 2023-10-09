@@ -61,7 +61,7 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     substate_code = ""
     on_exit_action = state.on_exit_action
     if on_exit_action:
-        substate_code += f'note "On Exit: {on_exit_action.type} {on_exit_action.parameter}\\n" as N_{state.name}\n'
+        substate_code += f'note "<<State Behavior>>\\n On Exit: {on_exit_action.type} {on_exit_action.parameter}\\n" as N_{state.name}\n'
     
     substate_code += f"{indent_str}state {state.name}"
     if state.choice == True:
@@ -70,9 +70,9 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     if state.entries or state.exits or state.substates:
         substate_code += " {\n"
         for entry in state.entries:
-            substate_code += f"{indent_str}\tstate {entry} {ENTRY_STEREOTYPE}\n"
+            substate_code += f"{indent_str}\tstate {entry} <<{ENTRY_STEREOTYPE}>>\n"
         for exit in state.exits:
-            substate_code += f"{indent_str}\tstate {exit} {EXIT_STEREOTYPE}\n"
+            substate_code += f"{indent_str}\tstate {exit} <<{EXIT_STEREOTYPE}>>\n"
         
         for child in state.substates:
             substate_code += generate_substates(states[child], states, indent + 1)

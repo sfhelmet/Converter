@@ -4,8 +4,8 @@ from puml.puml_generate import generate_plantuml
 from prolog.prolog_parser import parse_prolog
 from prolog.prolog_generate import generate_prolog
 
-input_file = "./db/output.pl"
-output_file = "./puml/TCS.puml"
+input_file = "./resources/PUML/output.puml"
+output_file = "./resources/db/output.pl"
 
 input_language = input_file.split(".")[-1]
 output_language = output_file.split(".")[-1]
