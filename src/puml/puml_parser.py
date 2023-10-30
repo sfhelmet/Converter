@@ -136,12 +136,12 @@ def parse_ega(ega: str):
     events = []
     for event_str in events_str:
         if event_str.split()[0] not in EVENT_TYPES:
-            events.append(Event("call", event_str))
+            events.append(Event("call", event_str.strip()))
 
-    guards = [Guard(condition) for condition in guards_str]
+    guards = [Guard(condition.strip()) for condition in guards_str]
 
     actions = []
     for action_str in actions_str:
-        actions.append(Action("log", action_str))
+        actions.append(Action("log", action_str.strip()))
 
     return events, guards, actions

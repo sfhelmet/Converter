@@ -3,3 +3,6 @@
 Pipfile.lock
 *.puml
 *.pl
+*.xml
+*.iml
+settings.json
