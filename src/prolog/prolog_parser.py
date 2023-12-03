@@ -88,6 +88,32 @@ def parse_prolog():
         param = bytes_to_string(get_params(action)[1])
         states[state].on_exit_action = Action(type, param)
 
+    on_entry_actions = get_onentry_action("State", "Action")
+    for on_entry_action in on_entry_actions:
+        state = on_entry_action["State"]
+        action = on_entry_action["Action"]
+        type = get_params(action)[0]
+        param = bytes_to_string(get_params(action)[1])
+        states[state].on_entry_action = Action(type, param)
+        
+    do_actions = get_do_action("State", "Action")
+    for do_action in do_actions:
+        state = do_action["State"]
+        action = do_action["Action"]
+        type = get_params(action)[0]
+        param = bytes_to_string(get_params(action)[1])
+        states[state].do_action = Action(type, param)
+
+    # internal_transfers = get_internal_transition("State", "Event", "Guard", "Action")
+    # for internal_transfer in internal_transfers:
+    #     state = internal_transfer["State"]
+    #     event = internal_transfer["Event"]
+    #     guard = internal_transfer["Guard"]
+    #     action = internal_transfer["Action"]
+    #     type = get_params(action)[0]
+    #     param = bytes_to_string(get_params(action)[1])
+    #     states[state].internal_transfer = Action(type, param)
+
     return states, transitions
 
     
