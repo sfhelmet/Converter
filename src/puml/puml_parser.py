@@ -9,7 +9,7 @@ from model.transition import Transition
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
-from src.puml.puml_constants import EVENT_TYPES, CHOICE_STEREOTYPE, ENTRY_STEREOTYPE, EXIT_STEREOTYPE
+from src.puml.puml_constants import EVENT_TYPES, CHOICE_STEREOTYPE, ENTRY_STEREOTYPE, EXIT_STEREOTYPE, INITIAL_STATE, FINAL_STATE
 
 def parse_plantuml(puml_file):
     states = {}
@@ -84,19 +84,19 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
         ega = transition[colon_index + 1:]
         events, guards, actions = parse_ega(ega)
 
-    if src not in states and src != "[*]":
+    if src not in states and src != INITIAL_STATE:
         new_state = State(src)
         states[src] = new_state
 
-    if dest not in states and dest != "[*]":
+    if dest not in states and dest != FINAL_STATE:
         new_state = State(dest)
         states[dest] = new_state
 
-    if src == "[*]":
+    if src == INITIAL_STATE:
         states[dest].is_initial = True
         return None
     
-    elif dest == "[*]":
+    elif dest == FINAL_STATE:
         if len(superstate_stack) == 0:
             dest = "final"
         else:

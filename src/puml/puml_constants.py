@@ -1,9 +1,11 @@
 from enum import Enum
-SPECIAL_STATE = "[*]"
+INITIAL_STATE = "[*]"
+FINAL_STATE = "[*]"
 ENTRY_STEREOTYPE = "entryPoint"
 EXIT_STEREOTYPE = "exitPoint"
 CHOICE_STEREOTYPE = "choice"
 ARROW_TYPE = "-->"
+
 
 class EventType(Enum):
     CALL = "call"

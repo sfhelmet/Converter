@@ -6,7 +6,7 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
-from puml.puml_constants import CHOICE_STEREOTYPE, SPECIAL_STATE, ENTRY_STEREOTYPE, EXIT_STEREOTYPE, ARROW_TYPE
+from puml.puml_constants import CHOICE_STEREOTYPE, INITIAL_STATE, FINAL_STATE, ENTRY_STEREOTYPE, EXIT_STEREOTYPE, ARROW_TYPE
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     plantuml_code = "@startuml\n\n"
@@ -37,9 +37,9 @@ def generate_transitions(transition, states):
     dest = transition.destination
     src = transition.source
     if states.get(transition.destination, State('dummy')).is_final:
-        dest = SPECIAL_STATE
+        dest = FINAL_STATE
     elif transition.source.startswith("__INIT"):
-        src = SPECIAL_STATE
+        src = INITIAL_STATE
     plantuml_code += f"{src} {ARROW_TYPE} {dest}"  
 
     if transition.events or transition.guards or transition.actions:
