@@ -6,10 +6,10 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
-from puml.puml_constants import CHOICE_STEREOTYPE, INITIAL_STATE, FINAL_STATE, ENTRY_STEREOTYPE, EXIT_STEREOTYPE, ARROW_TYPE
+from puml.puml_constants import *
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
-    plantuml_code = "@startuml\n\n"
+    plantuml_code = f"{START_PUML}\n\n"
     for state in states:
         if states[state].superstate:
             continue
@@ -29,7 +29,7 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     for transition in transitions:
         plantuml_code += generate_transitions(transition, states)
         plantuml_code += "\n"
-    plantuml_code += "\n@enduml\n"
+    plantuml_code += f"\n{END_PUML}\n"
     return plantuml_code
 
 def generate_transitions(transition, states):
@@ -61,7 +61,7 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     substate_code = ""
     on_exit_action = state.on_exit_action
     if on_exit_action:
-        substate_code += f'note "<<State Behavior>>\\n On Exit: {on_exit_action.type} {on_exit_action.parameter}\\n" as N_{state.name}\n'
+        substate_code += f'note "<<{STATE_BEHAVIOR}>>\\n On Exit: {on_exit_action.type} {on_exit_action.parameter}\\n" as N_{state.name}\n'
     
     substate_code += f"{indent_str}state {state.name}"
     if state.choice == True:

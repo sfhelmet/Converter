@@ -9,7 +9,7 @@ from model.transition import Transition
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
-from src.puml.puml_constants import EVENT_TYPES, CHOICE_STEREOTYPE, ENTRY_STEREOTYPE, EXIT_STEREOTYPE, INITIAL_STATE, FINAL_STATE
+from src.puml.puml_constants import *
 
 def parse_plantuml(puml_file):
     states = {}
