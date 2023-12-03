@@ -46,8 +46,8 @@ def get_onentry_action(var_name, action):
 def get_onexit_action(var_name, action):
   return __query_relation("onexit_action", var_name, action)
 
-def get_do_action(var_name, action):
-  return __query_relation("do_action", var_name, action)
+def get_do_action(var_name, proc):
+  return __query_relation("do_action", var_name, proc)
 
 def get_transition(source, destination, event, guard, action):
   return __query_relation("transition", source, destination, event, guard, action)

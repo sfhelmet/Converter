@@ -69,7 +69,7 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
             substate_code += f'On Entry: {on_entry_action.type} {on_entry_action.parameter}\\n'
         
         if do_action:
-            substate_code += f'Do Action {do_action.type} {do_action.parameter}\\n'
+            substate_code += f'Do Action: {do_action.procedure}\\n'
 
         if on_exit_action:
             substate_code += f'On Exit: {on_exit_action.type} {on_exit_action.parameter}\\n'

@@ -9,6 +9,7 @@ from model.transition import Transition
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
+from model.proc import Proc
 from prolog.query import *
 from prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
 from src.util.parse import get_params
@@ -96,13 +97,11 @@ def parse_prolog():
         param = bytes_to_string(get_params(action)[1])
         states[state].on_entry_action = Action(type, param)
         
-    do_actions = get_do_action("State", "Action")
+    do_actions = get_do_action("State", "Proc")
     for do_action in do_actions:
         state = do_action["State"]
-        action = do_action["Action"]
-        type = get_params(action)[0]
-        param = bytes_to_string(get_params(action)[1])
-        states[state].do_action = Action(type, param)
+        procedure = do_action["Proc"]
+        states[state].do_action = Proc(bytes_to_string(get_params(procedure)[0]))
 
     # internal_transfers = get_internal_transition("State", "Event", "Guard", "Action")
     # for internal_transfer in internal_transfers:
