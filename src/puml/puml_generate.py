@@ -59,20 +59,29 @@ def generate_transitions(transition, states):
 def generate_substates(state: State, states: dict[str:State], indent =  0) -> str:
     indent_str = "\t" * indent
     substate_code = ""
-    on_entry_action = state.on_entry_action
-    do_action = state.do_action
-    on_exit_action = state.on_exit_action
-    if on_exit_action or on_entry_action or do_action:
+    on_entry_actions = state.on_entry_actions
+    do_actions = state.do_actions
+    on_exit_actions = state.on_exit_actions
+    if on_exit_actions or on_entry_actions or do_actions:
         substate_code += f'{indent_str}note "<<{STATE_BEHAVIOR}>>\\n'
 
-        if on_entry_action:
-            substate_code += f'On Entry: {on_entry_action.type} {on_entry_action.parameter}\\n'
-        
-        if do_action:
-            substate_code += f'Do Action: {do_action.procedure}\\n'
+        if on_entry_actions:
+            substate_code += f'On Entry: {on_entry_actions[0].type} {on_entry_actions[0].parameter}'
+            for i in range(1, len(on_entry_actions)):
+                substate_code += f'; {on_entry_actions[i].type} {on_entry_actions[i].parameter}'
+            substate_code += '\\n'
 
-        if on_exit_action:
-            substate_code += f'On Exit: {on_exit_action.type} {on_exit_action.parameter}\\n'
+        if do_actions:
+            substate_code += f'Do Action: {do_actions[0].procedure}'
+            for i in range(1, len(do_actions)):
+                substate_code += f'; {do_actions[i].procedure}'
+            substate_code += '\\n'
+
+        if on_exit_actions:
+            substate_code += f'On Exit: {on_exit_actions[0].type} {on_exit_actions[0].parameter}'
+            for i in range(1, len(on_exit_actions)):
+                substate_code += f'; {on_exit_actions[i].type} {on_exit_actions[i].parameter}'
+            substate_code += '\\n'
 
         substate_code += f'" as N_{state.name} \n'
 
@@ -94,7 +103,8 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
             substate_code += indent_str + "\t" + generate_transitions(transition, states) + "\n"
 
         substate_code += indent_str + "}\n"
-        if on_exit_action:
+
+        if on_exit_actions or do_actions or on_entry_actions:
             substate_code += f"N_{state.name} --> {state.name}\n"
 
     substate_code += "\n"

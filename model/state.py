@@ -11,7 +11,7 @@ class State:
         self.choice = False
         self.exit = False
         self.entry = False
-        self.on_exit_action = None
-        self.on_entry_action = None
-        self.do_action = None
+        self.on_exit_actions = []
+        self.on_entry_actions = []
+        self.do_actions = []
         self.internal_transfer = set()

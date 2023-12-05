@@ -82,12 +82,13 @@ def parse_prolog():
         states[sup].exits.add(exit_state)
 
     on_exit_actions = get_onexit_action("State", "Action")
+    
     for on_exit_action in on_exit_actions:
         state = on_exit_action["State"]
         action = on_exit_action["Action"]
         type = get_params(action)[0]
         param = bytes_to_string(get_params(action)[1])
-        states[state].on_exit_action = Action(type, param)
+        states[state].on_exit_actions.append(Action(type, param))
 
     on_entry_actions = get_onentry_action("State", "Action")
     for on_entry_action in on_entry_actions:
@@ -95,13 +96,13 @@ def parse_prolog():
         action = on_entry_action["Action"]
         type = get_params(action)[0]
         param = bytes_to_string(get_params(action)[1])
-        states[state].on_entry_action = Action(type, param)
+        states[state].on_entry_actions.append(Action(type, param))
         
     do_actions = get_do_action("State", "Proc")
     for do_action in do_actions:
         state = do_action["State"]
         procedure = do_action["Proc"]
-        states[state].do_action = Proc(bytes_to_string(get_params(procedure)[0]))
+        states[state].do_actions.append(Proc(bytes_to_string(get_params(procedure)[0])))
 
     # internal_transfers = get_internal_transition("State", "Event", "Guard", "Action")
     # for internal_transfer in internal_transfers:
