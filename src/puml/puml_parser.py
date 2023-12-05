@@ -55,6 +55,8 @@ def parse_plantuml(puml_file):
                         superstate_stack.append(state_name)
                     states[state_name] = (new_state)
 
+                elif line.startswith('note ') or line.startswith('N_'):
+                    pass
                 else:
                     new_transition = parse_transition(line, states, transitions, superstate_stack)
                     if new_transition:

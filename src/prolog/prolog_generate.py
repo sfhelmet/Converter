@@ -49,8 +49,11 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
     for state in choice:
         prolog_code += f"state({state}). % choice state\n"
 
-    # for entry_pseudostate in entry_pseudostates:
-    #     prolog_code += f"entry_pseudostate({entry_pseudostate}, ).\n"
+    for entry_pseudostate in entry_pseudostates:
+        for transition in transitions:
+            if transition.source == entry_pseudostate:
+                prolog_code += f"entry_pseudostate({entry_pseudostate}, {transition.destination}).\n"
+                break
         
     for exit_pseudostate in exit_pseudostates:
         prolog_code += f"exit_pseudostate({exit_pseudostate}, {states[exit_pseudostate].superstate}).\n"
