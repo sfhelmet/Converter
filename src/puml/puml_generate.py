@@ -24,7 +24,7 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
 
             plantuml_code += "\n"
 
-    plantuml_code += "\n"
+    # plantuml_code += "\n"
 
     for transition in transitions:
         plantuml_code += generate_transitions(transition, states)
@@ -63,7 +63,7 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     do_action = state.do_action
     on_exit_action = state.on_exit_action
     if on_exit_action or on_entry_action or do_action:
-        substate_code += f'note "<<{STATE_BEHAVIOR}>>\\n'
+        substate_code += f'{indent_str}note "<<{STATE_BEHAVIOR}>>\\n'
 
         if on_entry_action:
             substate_code += f'On Entry: {on_entry_action.type} {on_entry_action.parameter}\\n'
