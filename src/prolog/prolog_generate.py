@@ -73,6 +73,14 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         for action in states[on_entry_action_state].on_entry_actions:
             prolog_code += f"onentry_action({on_entry_action_state}, {create_action_string(action)}).\n"
 
+    for do_action_state in do_actions_list:
+        for proc in states[do_action_state].do_actions:
+            prolog_code += f"do_action({do_action_state}, {create_proc_string(proc)}).\n"
+
+    for on_exit_action_state in on_exit_actions_list:
+        for action in states[on_exit_action_state].on_exit_actions:
+            prolog_code += f"onexit_action({on_exit_action_state}, {create_action_string(action)}).\n"
+
     prolog_code += "\n"
 
     for transition in transitions:
@@ -110,3 +118,6 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 
 def create_action_string(action: Action) -> str:
     return f'action({action.type}, "{action.parameter}")'
+
+def create_proc_string(proc: str) ->str:
+    return f'proc("{proc}")'
