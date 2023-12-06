@@ -15,6 +15,8 @@ def parse_plantuml(puml_file):
     states = {}
     transitions = set()
     superstate_stack = []
+
+    instate_actions = {}
     with open(puml_file, 'r') as file:
         
         for line in file:
@@ -37,6 +39,14 @@ def parse_plantuml(puml_file):
                         continue
 
                     new_state = State(state_name)
+                    if state_name in instate_actions:
+                        state_behavior = instate_actions[state_name]
+                        new_state.on_entry_actions = state_behavior["on_entry"]
+                        new_state.do_actions = state_behavior["do_action"]
+                        new_state.on_exit_actions = state_behavior["on_exit"]
+
+                        instate_actions.pop(state_name)
+                        
                     connect_superstate(new_state, superstate_stack, states)
                     
                     left_stereotype = line.find("<<")
@@ -55,8 +65,49 @@ def parse_plantuml(puml_file):
                         superstate_stack.append(state_name)
                     states[state_name] = (new_state)
 
-                elif line.startswith('note ') or line.startswith('N_'):
+                elif line.startswith('note '):
+                    left_stereotype = line.find("<<")
+                    right_stereotype = line.find(">>")
+                    stereotype = line[left_stereotype + 2:right_stereotype]
+                    if stereotype == STATE_BEHAVIOR:
+                        state_name_index = line.find("N_")
+                        state_name = line[state_name_index+2:].strip()
+
+                        on_entry_index = line.find(NoteType.ON_ENTRY.value)
+                        do_action_index = line.find(NoteType.DO_ACTION.value)
+                        on_exit_index = line.find(NoteType.ON_EXIT.value)
+                        
+                        # ON ENTRY
+                        on_entry_string = line[on_entry_index:]
+                        start = on_entry_string.find(":")
+                        end = on_entry_string.find("\\n")
+
+                        _, _, entry_actions = parse_ega("/" + on_entry_string[start + 1:end].strip())
+                          
+                        # DO ACTION
+                        do_action_string = line[do_action_index:]
+                        start = do_action_string.find(":")
+                        end = do_action_string.find("\\n")
+
+                        _, _, do_actions = parse_ega("/" + do_action_string[start + 1:end].strip())
+
+                        # ON EXIT
+                        on_exit_string = line[on_exit_index:]
+                        start = on_exit_string.find(":")
+                        end = on_exit_string.find("\\n")
+
+                        _, _, exit_actions = parse_ega("/" + on_exit_string[start + 1:end])
+
+                        if state_name in states:
+                            states[state_name].on_entry_actions = entry_actions
+                            states[state_name].do_actions = do_actions
+                            states[state_name].on_exit_actions = exit_actions
+                        else:
+                            instate_actions[state_name] = {"on_entry": entry_actions, "do_action": do_actions, "on_exit": exit_actions}
+                
+                elif line.startswith('N_'):
                     pass
+
                 else:
                     new_transition = parse_transition(line, states, transitions, superstate_stack)
                     if new_transition:
