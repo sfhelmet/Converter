@@ -23,6 +23,9 @@ def parse_plantuml(puml_file):
             if line.strip():
                 line = line.strip()
 
+                if line.startswith(END_PUML):
+                    break
+
                 if line.startswith('@') or line.isspace():
                     continue
                 
