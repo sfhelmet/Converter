@@ -9,7 +9,9 @@ from model.transition import Transition
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
+
 from src.puml.puml_constants import *
+from src.logger_config import logging
 
 def parse_plantuml(puml_file):
     states = {}
@@ -22,11 +24,16 @@ def parse_plantuml(puml_file):
         for line in file:
             if line.strip():
                 line = line.strip()
-
+                
                 if line.startswith(END_PUML):
+                    logging.debug("End of PlantUML file Found")
                     break
+                
+                elif line.startswith(START_PUML):
+                    logging.debug("Start of PlantUML file Found")
+                    continue
 
-                if line.startswith('@') or line.isspace():
+                if line.isspace():
                     continue
                 
                 elif line.startswith('}'):
@@ -38,6 +45,7 @@ def parse_plantuml(puml_file):
 
                     # "state" can be a state name
                     if state_name[0] == "-":
+                        logging.debug('state name "state" found')
                         transitions.add(parse_transition(line, states, transitions, superstate_stack))
                         continue
 

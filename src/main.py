@@ -5,11 +5,8 @@ from prolog.prolog_parser import parse_prolog
 from prolog.prolog_generate import generate_prolog
 from exceptions import InvalidUsageError, NotSupportedError
 
-import logging
+from logger_config import logging
 import sys
-
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 def main():
     if len(sys.argv) > 4 or len(sys.argv) < 3:

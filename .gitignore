@@ -6,3 +6,4 @@ Pipfile.lock
 *.xml
 *.iml
 settings.json
+*/log.txt
