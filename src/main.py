@@ -3,55 +3,61 @@ from puml.puml_parser import parse_plantuml
 from puml.puml_generate import generate_plantuml
 from prolog.prolog_parser import parse_prolog
 from prolog.prolog_generate import generate_prolog
+from exceptions import InvalidUsageError, NotSupportedError
 
+import logging
 import sys
 
-if len(sys.argv) > 4 or len(sys.argv) < 3:
-    sys.stderr.write("Error: Usage: python myscript.py [ -f ] arg1 arg2\n")
-    exit(1)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-flag = None
-arg1 = None
-arg2 = None
+def main():
+    if len(sys.argv) > 4 or len(sys.argv) < 3:
+        raise InvalidUsageError("\nUsage: python main.py [ -f ] arg1 arg2")
 
-if sys.argv[1].startswith('-') and len(sys.argv) == 4:
-    flag = sys.argv[1]
-    input_file = sys.argv[2]
-    output_file = sys.argv[3] if len(sys.argv) > 3 else None
-elif len(sys.argv) == 3:
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
-else:
-    sys.stderr.write("Error: Usage: python myscript.py [ -f ] arg1 arg2\n")
-    exit(1)
+    flags = None
+    input_file = None # "./resources/PUML/output.puml"
+    output_file = None # "./resources/db/output.pl"
 
-# input_file = "./resources/PUML/output.puml"
-# output_file = "./resources/db/output.pl"
+    if sys.argv[1].startswith('-') and len(sys.argv) == 4:
+        flags = sys.argv[1]
+        input_file = sys.argv[2]
+        output_file = sys.argv[3]
+    elif len(sys.argv) == 3:
+        input_file = sys.argv[1]
+        output_file = sys.argv[2]
+    else:
+        raise InvalidUsageError("\nUsage: python main.py [ -f ] arg1 arg2")
 
-input_language = input_file.split(".")[-1]
-output_language = output_file.split(".")[-1]
+    input_language = input_file.split(".")[-1]
+    output_language = output_file.split(".")[-1]
 
-if input_language == "pl":
-    file_load(input_file) # Load prolog file
-    states, transitions = parse_prolog()
+    states = None
+    transitions = None
+    sub_code = None
 
-elif input_language == "puml":
-    states, transitions = parse_plantuml(input_file)
+    if input_language == "pl":
+        file_load(input_file) # Load prolog file
+        states, transitions = parse_prolog()
 
-else:
-    sys.stderr.write("Not Supported Yet")
-    exit(1)
+    elif input_language == "puml":
+        states, transitions = parse_plantuml(input_file)
 
-if output_language == "pl":
-    sub_code = generate_prolog(states, transitions)
+    else:
+        raise NotSupportedError("Input file type not supported")
 
-elif output_language == "puml":
-    sub_code = generate_plantuml(states, transitions)
-    
-else:
-    sys.stderr.write("Not Supported Yet")
-    exit(1)
+    if output_language == "pl":
+        sub_code = generate_prolog(states, transitions)
 
-with open(output_file, 'w') as file:
-    file.write(sub_code)
-    print(output_file + " has been generated")
+    elif output_language == "puml":
+        sub_code = generate_plantuml(states, transitions)
+        
+    else:
+        raise NotSupportedError("Output file type not supported")
+
+    with open(output_file, 'w') as file:
+        file.write(sub_code)
+        logging.info(output_file + " has been generated")
+
+if __name__ == "__main__":
+    main()
