@@ -11,9 +11,9 @@ from model.guard import Guard
 from model.action import Action
 
 from src.puml.puml_constants import *
-from src.logger_config import logging
+from src.logger_config import logger
 
-def parse_plantuml(puml_file):
+def parse_plantuml(puml_file): 
     states = {}
     transitions = set()
     superstate_stack = []
@@ -26,11 +26,11 @@ def parse_plantuml(puml_file):
                 line = line.strip()
                 
                 if line.startswith(END_PUML):
-                    logging.debug("End of PlantUML file Found")
+                    logger.debug("End of PlantUML file Found")
                     break
                 
                 elif line.startswith(START_PUML):
-                    logging.debug("Start of PlantUML file Found")
+                    logger.debug("Start of PlantUML file Found")
                     continue
 
                 if line.isspace():
@@ -45,7 +45,7 @@ def parse_plantuml(puml_file):
 
                     # "state" can be a state name
                     if state_name[0] == "-":
-                        logging.debug('state name "state" found')
+                        logger.warning('state name "state" found')
                         transitions.add(parse_transition(line, states, transitions, superstate_stack))
                         continue
 

@@ -5,7 +5,7 @@ from prolog.prolog_parser import parse_prolog
 from prolog.prolog_generate import generate_prolog
 from exceptions import InvalidUsageError, NotSupportedError
 
-from logger_config import logging
+from logger_config import logger
 import sys
 
 def main():
@@ -54,7 +54,7 @@ def main():
 
     with open(output_file, 'w') as file:
         file.write(sub_code)
-        logging.info(output_file + " has been generated")
+        logger.info(output_file + " has been generated")
 
 if __name__ == "__main__":
     main()
