@@ -76,6 +76,8 @@ def parse_plantuml(puml_file):
                         superstate_stack.append(state_name)
                     states[state_name] = (new_state)
 
+                    logger.debug(f'"{state_name}" created')
+
                 elif line.startswith('note '):
                     left_stereotype = line.find("<<")
                     right_stereotype = line.find(">>")
@@ -115,7 +117,9 @@ def parse_plantuml(puml_file):
                             states[state_name].on_exit_actions = exit_actions
                         else:
                             instate_actions[state_name] = {"on_entry": entry_actions, "do_action": do_actions, "on_exit": exit_actions}
-                
+
+                        logger.debug(f'State Behavior of "{state_name}" created')
+
                 elif line.startswith('N_'):
                     pass
 
@@ -125,7 +129,7 @@ def parse_plantuml(puml_file):
                         if len(superstate_stack) != 0:
                             states[superstate_stack[-1]].transitions.add(new_transition)
                         else:
-                            transitions.add(new_transition)
+                            transitions.add(new_transition)            
     return states, transitions
 
 def connect_superstate(state: State, superstate_stack: list[str], states: dict[str:State]):
@@ -151,10 +155,12 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
     if src not in states and src != INITIAL_STATE:
         new_state = State(src)
         states[src] = new_state
+        logger.debug(f'"{src}" created by transition')
 
     if dest not in states and dest != FINAL_STATE:
         new_state = State(dest)
         states[dest] = new_state
+        logger.debug(f'"{dest}" created by transition')
 
     if src == INITIAL_STATE:
         states[dest].is_initial = True
@@ -169,11 +175,13 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
             new_state = State(dest)
             new_state.is_final = True
             states[dest] = new_state
+            logger.debug(f'"{dest}" created by transition')
 
     connect_superstate(states[src], superstate_stack, states)
     connect_superstate(states[dest], superstate_stack, states)
     
     new_transition = Transition(src, dest, events=events, guards=guards, actions=actions)
+    logger.debug(f'"{new_transition.source}" to "{new_transition.destination}" created')
     return new_transition
     
 def parse_ega(ega: str):

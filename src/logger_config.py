@@ -6,7 +6,7 @@ logger.setLevel(logging.DEBUG)
 
 # Create a console handler and set the level to DEBUG
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
+console_handler.setLevel(logging.INFO)
 
 # Create a file handler and set the level to DEBUG
 LOG_FILE = "./convert.log"

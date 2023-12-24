@@ -14,7 +14,11 @@ from prolog.query import *
 from prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
 from src.util.parse import get_params
 
+from src.logger_config import logger
+
 def parse_prolog():
+    
+    logger.debug("Reading Prolog File")
     states = {}
     states_list = get_state("Name")
 
@@ -114,6 +118,7 @@ def parse_prolog():
     #     param = bytes_to_string(get_params(action)[1])
     #     states[state].internal_transfer = Action(type, param)
 
+    logger.debug("End of Reading Prolog File")
     return states, transitions
 
     
