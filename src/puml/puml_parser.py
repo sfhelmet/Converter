@@ -13,6 +13,8 @@ from model.action import Action
 from src.puml.puml_constants import *
 from src.logger_config import logger
 
+ARROWSTICK_TYPE = {"-", "l", "r"}
+
 def parse_plantuml(puml_file): 
     states = {}
     transitions = set()
@@ -142,6 +144,16 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
     events, guards, actions = [], [] ,[]
     dash_index = transition.find("-")
     greater_index = transition.find(">")
+
+    if dash_index == -1 or greater_index == -1:
+        logger.error(f'"{transition}" is not valid PlantUML')
+        return None
+    
+    for i in range(dash_index + 1, greater_index):
+        if transition[i] not in ARROWSTICK_TYPE:
+            logger.error(f'"{transition}" is not valid PlantUML')
+            return None
+        
     colon_index = transition.find(":")
     src = transition[:dash_index].strip()
     if colon_index == -1:
