@@ -14,4 +14,4 @@ class State:
         self.on_exit_actions = []
         self.on_entry_actions = []
         self.do_actions = []
-        self.internal_transfer = set()
+        self.internal_transitions = set()

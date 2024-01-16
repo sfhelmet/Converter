@@ -108,20 +108,22 @@ def parse_prolog():
         procedure = do_action["Proc"]
         states[state].do_actions.append(Proc(bytes_to_string(get_params(procedure)[0])))
 
-    # internal_transfers = get_internal_transition("State", "Event", "Guard", "Action")
-    # for internal_transfer in internal_transfers:
-    #     state = internal_transfer["State"]
-    #     event = internal_transfer["Event"]
-    #     guard = internal_transfer["Guard"]
-    #     action = internal_transfer["Action"]
-    #     type = get_params(action)[0]
-    #     param = bytes_to_string(get_params(action)[1])
-    #     states[state].internal_transfer = Action(type, param)
+    internal_trasitions = get_internal_transition("State", "Event", "Guard", "Action")
+    for internal_transition in internal_trasitions:
+        state = internal_transition["State"]
+        event = [internal_transition["Event"]]
+        guard = [internal_transition["Guard"]]
+        action = internal_transition["Action"]
+
+        type = get_params(action)[0]
+        param = bytes_to_string(get_params(action)[1])
+        
+        transition = Transition(state, state, event, guard, [Action(type, param)])
+        states[state].internal_transitions.add(transition)
+
 
     logger.debug("End of Reading Prolog File")
-    return states, transitions
-
-    
+    return states, transitions  
 
 def parse_event(transition_event) -> list[Event]:
     if transition_event == NIL:
