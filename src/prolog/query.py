@@ -1,4 +1,12 @@
+import os
+import sys
+
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(root_path)
+
 from pyswip import Prolog
+
+from src.logger_config import logger
 
 prolog = Prolog()
 
@@ -14,7 +22,7 @@ def __query_relation(relations, *args):
   try:
     results = list(prolog.query(query))
   except:
-    print(f"Warning: no {relations}s found")
+    logger.debug(f"No {relations}s found")
     return []
   return results
 
