@@ -44,7 +44,8 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
             do_actions_list.append(state.name)
         if state.on_exit_actions:
             on_exit_actions_list.append(state.name)
-            
+        # TODO: Add internal trasitions
+        
     for initial_state in initial_states:
         prolog_code += f"{INITIAL_PREFIX}({initial_state}).\n"
     
@@ -81,6 +82,7 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         for action in states[on_exit_action_state].on_exit_actions:
             prolog_code += f"{ON_EXIT_ACTION_PREFIX}({on_exit_action_state}, {create_action_string(action)}).\n"
 
+    # TODO: Loop over internal transitions
     prolog_code += "\n"
 
     for transition in transitions:
