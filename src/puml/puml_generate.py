@@ -23,8 +23,9 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
                 plantuml_code += f" <<{CHOICE_STEREOTYPE}>>"
             
             elif internal_transitions := states[state].internal_transitions:
+                plantuml_code += ":"
                 for internal_transition in internal_transitions:
-                    plantuml_code += f" Internal Transition: {generate_ega(internal_transition)}\n"
+                    plantuml_code += f" Internal Transition: {generate_ega(internal_transition)}\\n"
 
             plantuml_code += "\n"
 
@@ -60,7 +61,8 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     on_entry_actions = state.on_entry_actions
     do_actions = state.do_actions
     on_exit_actions = state.on_exit_actions
-    if on_exit_actions or on_entry_actions or do_actions:
+    internal_transitions = state.internal_transitions
+    if on_exit_actions or on_entry_actions or do_actions or internal_transitions:
         substate_code += f'{indent_str}note "<<{STATE_BEHAVIOR}>>\\n'
 
         if on_entry_actions:
@@ -81,10 +83,18 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
                 substate_code += f'; {on_exit_actions[i].type} {on_exit_actions[i].parameter}'
             substate_code += '\\n'
 
+        if internal_transitions := state.internal_transitions:
+            for internal_transition in internal_transitions:
+                substate_code += f"{generate_ega(internal_transition)}\\n"
+
         substate_code += f'" as N_{state.name} \n'
 
     substate_code += f"{indent_str}state {state.name}"
-    #TODO : Add internal transitions
+    if internal_transition and not (state.entries or state.exits or state.substates):
+        substate_code += ":"
+        for internal_transition in internal_transitions:
+            substate_code += f" Internal Transition: {generate_ega(internal_transition)}\\n"        
+
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
 
