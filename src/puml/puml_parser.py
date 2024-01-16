@@ -43,6 +43,7 @@ def parse_plantuml(puml_file):
                     continue
 
                 elif line.startswith('state '):
+                    # TODO : Change here to accept internal transitions
                     state_name = line.split()[1]
 
                     # "state" can be a state name
@@ -112,7 +113,7 @@ def parse_plantuml(puml_file):
                         end = on_exit_string.find("\\n")
 
                         _, _, exit_actions = parse_ega("/" + on_exit_string[start + 1:end])
-
+                        # TODO: Parse note for internal trasitions
                         if state_name in states:
                             states[state_name].on_entry_actions = entry_actions
                             states[state_name].do_actions = do_actions

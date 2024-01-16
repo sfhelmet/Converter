@@ -54,7 +54,6 @@ def generate_transitions(transition, states):
                 
 
 def generate_substates(state: State, states: dict[str:State], indent =  0) -> str:
-    # TODO: Implement internal transition for superstates
     TAB = "\t"
     indent_str = TAB * indent
     substate_code = ""
