@@ -21,9 +21,10 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
             plantuml_code += f"state {states[state].name}" if not states[state].is_final else ""
             if states[state].choice:
                 plantuml_code += f" <<{CHOICE_STEREOTYPE}>>"
-
-            elif internal_transition := states[state].internal_transitions:
-                plantuml_code += f" Internal Transition: {generate_ega(internal_transition)}"
+            
+            elif internal_transitions := states[state].internal_transitions:
+                for internal_transition in internal_transitions:
+                    plantuml_code += f" Internal Transition: {generate_ega(internal_transition)}\n"
 
             plantuml_code += "\n"
 
@@ -83,6 +84,7 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
         substate_code += f'" as N_{state.name} \n'
 
     substate_code += f"{indent_str}state {state.name}"
+    #TODO : Add internal transitions
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
 
@@ -108,7 +110,7 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     return substate_code
 
 def generate_ega(transition):
-    subcode += ""
+    subcode = ""
     if transition.events:
         subcode += generate_events(transition.events)
 

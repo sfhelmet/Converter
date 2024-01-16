@@ -111,14 +111,11 @@ def parse_prolog():
     internal_trasitions = get_internal_transition("State", "Event", "Guard", "Action")
     for internal_transition in internal_trasitions:
         state = internal_transition["State"]
-        event = [internal_transition["Event"]]
-        guard = [internal_transition["Guard"]]
-        action = internal_transition["Action"]
-
-        type = get_params(action)[0]
-        param = bytes_to_string(get_params(action)[1])
+        event = parse_event(internal_transition["Event"])
+        guard = parse_guard(internal_transition["Guard"])
+        action = parse_action(internal_transition["Action"])
         
-        transition = Transition(state, state, event, guard, [Action(type, param)])
+        transition = Transition(state, state, event, guard, action)
         states[state].internal_transitions.add(transition)
 
 
