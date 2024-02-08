@@ -27,6 +27,7 @@ class NoteType(Enum):
     ON_ENTRY = "On Entry"
     DO_ACTION = "Do Action"
     ON_EXIT =  "On Exit"
+    INTERNAL_TRANSITION = "Internal Transition"
 
 
 EVENT_TYPES = {EventType.CALL, EventType.SIGNAL, EventType.TIME, EventType.CHANGE, EventType.INACTIVITY, EventType.UPDATE, EventType.COMPLETION} 

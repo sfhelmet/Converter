@@ -94,7 +94,7 @@ def parse_plantuml(puml_file):
                         on_entry_index = line.find(NoteType.ON_ENTRY.value)
                         do_action_index = line.find(NoteType.DO_ACTION.value)
                         on_exit_index = line.find(NoteType.ON_EXIT.value)
-                        # internal_transition = line.find(NoteType.INTERNAL_TRANSITION.value)
+                        
                         
                         # ON ENTRY
                         on_entry_string = line[on_entry_index:]
@@ -115,6 +115,10 @@ def parse_plantuml(puml_file):
                         end = on_exit_string.find("\\n")
 
                         _, _, exit_actions = parse_ega("/" + on_exit_string[start + 1:end])
+
+                        for i in range(line.count(NoteType.INTERNAL_TRANSITION.value)):
+                            internal_transition = line.find(NoteType.INTERNAL_TRANSITION.value)
+                            
                         # TODO: Parse note for internal trasitions
                         if state_name in states:
                             states[state_name].on_entry_actions = entry_actions
