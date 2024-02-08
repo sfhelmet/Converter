@@ -95,7 +95,7 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
 
-    if state.entries or state.exits or state.superstate:
+    if state.entries or state.exits or state.substates:
         substate_code += " {\n"
         for entry in state.entries:
             substate_code += f"{indent_str}{TAB}state {entry} <<{ENTRY_STEREOTYPE}>>\n"
@@ -109,8 +109,10 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
             substate_code += indent_str + TAB + generate_transitions(transition, states) + "\n"
 
         substate_code += indent_str + "}\n"
-        if on_exit_actions or do_actions or on_entry_actions:
-            substate_code += f"N_{state.name} --> {state.name}\n"
+
+    if on_exit_actions or do_actions or on_entry_actions or internal_transitions:
+        substate_code += indent_str + "\n"
+        substate_code += f"{indent_str}N_{state.name} --> {state.name}\n"
 
     substate_code += "\n"
     return substate_code
