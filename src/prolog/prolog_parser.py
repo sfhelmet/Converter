@@ -156,10 +156,8 @@ def parse_action(transition_action) -> list[Action]:
         actions_params = get_params(transition_action)
         action_type = actions_params[0].strip()
         action_parameter = bytes_to_string(actions_params[1])
-        actions = action_parameter.split(";")
         actions_list = []
-        for action in actions:
-            actions_list.append(Action(action_type, action.strip()))
+        actions_list.append(Action(action_type, action_parameter))
 
     return actions_list
 
