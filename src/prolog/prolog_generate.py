@@ -56,7 +56,8 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         prolog_code += f"{ALIAS_PREFIX}({alias}, '').\n"
 
     for state in super_states:
-        prolog_code += f"{SUPERSTATE_PREFIX}({states[state].superstate}, {state}).\n"
+        if not states[state].entry and not states[state].exit:
+            prolog_code += f"{SUPERSTATE_PREFIX}({states[state].superstate}, {state}).\n"
 
     for state in choice:
         prolog_code += f"{CHOICE_STATE_PREFIX}({state}). % choice state\n"
@@ -72,7 +73,8 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 
     for on_entry_action_state in on_entry_actions_list:
         for action in states[on_entry_action_state].on_entry_actions:
-            prolog_code += f"{ON_ENTRY_ACTION_PREFIX}({on_entry_action_state}, {create_action_string(action)}).\n"
+            if action.parameter:
+                prolog_code += f"{ON_ENTRY_ACTION_PREFIX}({on_entry_action_state}, {create_action_string(action)}).\n"
 
     for do_action_state in do_actions_list:
         for proc in states[do_action_state].do_actions:
@@ -80,7 +82,8 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 
     for on_exit_action_state in on_exit_actions_list:
         for action in states[on_exit_action_state].on_exit_actions:
-            prolog_code += f"{ON_EXIT_ACTION_PREFIX}({on_exit_action_state}, {create_action_string(action)}).\n"
+            if action.parameter:
+                prolog_code += f"{ON_EXIT_ACTION_PREFIX}({on_exit_action_state}, {create_action_string(action)}).\n"
 
     # TODO: Loop over internal transitions
     prolog_code += "\n"

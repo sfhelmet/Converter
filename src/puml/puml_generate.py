@@ -10,6 +10,8 @@ from puml.puml_constants import *
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     plantuml_code = f"{START_PUML}\n\n"
+
+    # Generate States
     for state in states:
         if states[state].superstate:
             continue
@@ -25,12 +27,13 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
             elif internal_transitions := states[state].internal_transitions:
                 plantuml_code += ":"
                 for internal_transition in internal_transitions:
-                    plantuml_code += f" Internal Transition: {generate_ega(internal_transition)}\\n"
+                    
+                    plantuml_code += f" {NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition)}\\n"
 
             plantuml_code += "\n"
 
-    # plantuml_code += "\n"
 
+    # Generate Transitions
     for transition in transitions:
         plantuml_code += generate_transitions(transition, states)
         plantuml_code += "\n"
@@ -84,20 +87,15 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
 
         if internal_transitions := state.internal_transitions:
             for internal_transition in internal_transitions:
-                substate_code += f"{generate_ega(internal_transition)}\\n"
-
+                substate_code += f"{NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition)}\\n"
         substate_code += f'" as N_{state.name} \n'
 
-    substate_code += f"{indent_str}state {state.name}"
-    if internal_transition and not (state.entries or state.exits or state.substates):
-        substate_code += ":"
-        for internal_transition in internal_transitions:
-            substate_code += f" Internal Transition: {generate_ega(internal_transition)}\\n"        
+    substate_code += f"{indent_str}state {state.name}"      
 
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
 
-    if state.entries or state.exits or state.substates:
+    if state.entries or state.exits or state.superstate:
         substate_code += " {\n"
         for entry in state.entries:
             substate_code += f"{indent_str}{TAB}state {entry} <<{ENTRY_STEREOTYPE}>>\n"
@@ -111,7 +109,6 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
             substate_code += indent_str + TAB + generate_transitions(transition, states) + "\n"
 
         substate_code += indent_str + "}\n"
-
         if on_exit_actions or do_actions or on_entry_actions:
             substate_code += f"N_{state.name} --> {state.name}\n"
 
@@ -161,10 +158,8 @@ def generate_action(actions) -> str:
     action_str = " /"
     for i in range(len(actions)):
         action = actions[i]
-        
         if i != 0:
             action_str += "; "
 
         action_str += f"{action.type} {action.parameter}"
-    
     return action_str
