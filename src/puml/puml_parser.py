@@ -89,9 +89,12 @@ def parse_plantuml(puml_file):
                         state_name_index = line.find("N_")
                         state_name = line[state_name_index+2:].strip()
 
+                        # state_behaviors = line[:state_name_index].split("\\n")
+
                         on_entry_index = line.find(NoteType.ON_ENTRY.value)
                         do_action_index = line.find(NoteType.DO_ACTION.value)
                         on_exit_index = line.find(NoteType.ON_EXIT.value)
+                        # internal_transition = line.find(NoteType.INTERNAL_TRANSITION.value)
                         
                         # ON ENTRY
                         on_entry_string = line[on_entry_index:]
@@ -99,7 +102,6 @@ def parse_plantuml(puml_file):
                         end = on_entry_string.find("\\n")
 
                         _, _, entry_actions = parse_ega("/" + on_entry_string[start + 1:end].strip())
-                          
                         # DO ACTION
                         do_action_string = line[do_action_index:]
                         start = do_action_string.find(":")
@@ -131,6 +133,7 @@ def parse_plantuml(puml_file):
                     if new_transition:
                         if len(superstate_stack) != 0:
                             states[superstate_stack[-1]].transitions.add(new_transition)
+                            transitions.add(new_transition)  
                         else:
                             transitions.add(new_transition)            
     return states, transitions
@@ -146,6 +149,7 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
     dash_index = transition.find("-")
     greater_index = transition.find(">")
 
+    print(transition)
     if dash_index == -1 or greater_index == -1:
         logger.error(f'"{transition}" is not valid PlantUML')
         return None
@@ -194,6 +198,7 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
     connect_superstate(states[dest], superstate_stack, states)
     
     new_transition = Transition(src, dest, events=events, guards=guards, actions=actions)
+    print(new_transition)
     logger.debug(f'"{new_transition.source}" to "{new_transition.destination}" created')
     return new_transition
     
