@@ -43,7 +43,6 @@ def parse_plantuml(puml_file):
                     continue
 
                 elif line.startswith('state '):
-                    # TODO : Change here to accept internal transitions
                     state_name = line.split()[1]
 
                     # "state" can be a state name
@@ -58,6 +57,7 @@ def parse_plantuml(puml_file):
                         new_state.on_entry_actions = state_behavior["on_entry"]
                         new_state.do_actions = state_behavior["do_action"]
                         new_state.on_exit_actions = state_behavior["on_exit"]
+                        new_state.internal_transitions = state_behavior["internal_transitions"]
 
                         instate_actions.pop(state_name)
                         
@@ -102,6 +102,7 @@ def parse_plantuml(puml_file):
                         end = on_entry_string.find("\\n")
 
                         _, _, entry_actions = parse_ega("/" + on_entry_string[start + 1:end].strip())
+
                         # DO ACTION
                         do_action_string = line[do_action_index:]
                         start = do_action_string.find(":")
@@ -116,16 +117,23 @@ def parse_plantuml(puml_file):
 
                         _, _, exit_actions = parse_ega("/" + on_exit_string[start + 1:end])
 
-                        for i in range(line.count(NoteType.INTERNAL_TRANSITION.value)):
-                            internal_transition = line.find(NoteType.INTERNAL_TRANSITION.value)
+                        # INTERNAL TRANSITIONS
+                        internal_transitions_index = line.find(NoteType.INTERNAL_TRANSITION.value)
+                        internal_transitions_set = set()
+                        if internal_transitions_index != -1:
+                            internal_transitions = line[internal_transitions_index:].split("\\n")
                             
-                        # TODO: Parse note for internal trasitions
+                            for internal_transition in internal_transitions:
+                                if internal_transition.startswith(NoteType.INTERNAL_TRANSITION.value):
+                                    internal_transitions_set.add(Transition(state_name, state_name, *parse_ega(internal_transition)))
+                            
                         if state_name in states:
                             states[state_name].on_entry_actions = entry_actions
                             states[state_name].do_actions = do_actions
                             states[state_name].on_exit_actions = exit_actions
+                            states[state_name].internal_transitions = internal_transitions_set
                         else:
-                            instate_actions[state_name] = {"on_entry": entry_actions, "do_action": do_actions, "on_exit": exit_actions}
+                            instate_actions[state_name] = {"on_entry": entry_actions, "do_action": do_actions, "on_exit": exit_actions, "internal_transitions": internal_transitions_set}
 
                         logger.debug(f'State Behavior of "{state_name}" created')
 
@@ -153,7 +161,6 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
     dash_index = transition.find("-")
     greater_index = transition.find(">")
 
-    print(transition)
     if dash_index == -1 or greater_index == -1:
         logger.error(f'"{transition}" is not valid PlantUML')
         return None
@@ -202,7 +209,6 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
     connect_superstate(states[dest], superstate_stack, states)
     
     new_transition = Transition(src, dest, events=events, guards=guards, actions=actions)
-    print(new_transition)
     logger.debug(f'"{new_transition.source}" to "{new_transition.destination}" created')
     return new_transition
     
