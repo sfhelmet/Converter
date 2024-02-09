@@ -20,6 +20,7 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
     on_entry_actions_list = []
     do_actions_list = []
     on_exit_actions_list = []
+    internal_transitions_list = []
     for state_name in states:
         state = states[state_name]
         if state.superstate or state.entry or state.exit:
@@ -44,7 +45,9 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
             do_actions_list.append(state.name)
         if state.on_exit_actions:
             on_exit_actions_list.append(state.name)
-            
+        if state.internal_transitions:
+            internal_transitions_list.append(state.name)
+        
     for initial_state in initial_states:
         prolog_code += f"{INITIAL_PREFIX}({initial_state}).\n"
     
@@ -55,7 +58,8 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         prolog_code += f"{ALIAS_PREFIX}({alias}, '').\n"
 
     for state in super_states:
-        prolog_code += f"{SUPERSTATE_PREFIX}({states[state].superstate}, {state}).\n"
+        if not states[state].entry and not states[state].exit:
+            prolog_code += f"{SUPERSTATE_PREFIX}({states[state].superstate}, {state}).\n"
 
     for state in choice:
         prolog_code += f"{CHOICE_STATE_PREFIX}({state}). % choice state\n"
@@ -71,7 +75,8 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 
     for on_entry_action_state in on_entry_actions_list:
         for action in states[on_entry_action_state].on_entry_actions:
-            prolog_code += f"{ON_ENTRY_ACTION_PREFIX}({on_entry_action_state}, {create_action_string(action)}).\n"
+            if action.parameter:
+                prolog_code += f"{ON_ENTRY_ACTION_PREFIX}({on_entry_action_state}, {create_action_string(action)}).\n"
 
     for do_action_state in do_actions_list:
         for proc in states[do_action_state].do_actions:
@@ -79,11 +84,21 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 
     for on_exit_action_state in on_exit_actions_list:
         for action in states[on_exit_action_state].on_exit_actions:
-            prolog_code += f"{ON_EXIT_ACTION_PREFIX}({on_exit_action_state}, {create_action_string(action)}).\n"
+            if action.parameter:
+                prolog_code += f"{ON_EXIT_ACTION_PREFIX}({on_exit_action_state}, {create_action_string(action)}).\n"
 
+    for internal_transition_state in internal_transitions_list:
+        for transition in states[internal_transition_state].internal_transitions:
+            src, _, event_str, guard_str, action_str = create_transition_ega(transition)
+            prolog_code += f"{INTERNAL_TRANSITION_PREFIX}({src}, {event_str}, {guard_str}, {action_str}).\n"
+                
     prolog_code += "\n"
 
     for transition in transitions:
+        src, dest, event_str, guard_str, action_str = create_transition_ega(transition)
+        prolog_code += f"{TRANSITION_PREFIX}({src}, {dest}, {event_str}, {guard_str}, {action_str}).\n"
+    return prolog_code
+def create_transition_ega(transition: Transition) -> str:
         src = transition.source
         dest = transition.destination
 
@@ -112,9 +127,7 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 
         action_str = f'{ACTION_PREFIX}({transition.actions[0].type}, "{actions_parameter_str}")' if len(transition.actions) != 0 else NIL
 
-        prolog_code += f"{TRANSITION_PREFIX}({src}, {dest}, {event_str}, {guard_str}, {action_str}).\n" 
-
-    return prolog_code
+        return src, dest, event_str, guard_str, action_str
 
 def create_action_string(action: Action) -> str:
     return f'{ACTION_PREFIX}({action.type}, "{action.parameter}")'
