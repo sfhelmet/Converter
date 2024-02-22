@@ -1,0 +1,74 @@
+@startuml Air and Temperature Control
+note "<<State Behaviour>>\nOn Entry: Beep\nDo: Green led ON\nOn Exit: Double Beep; Green led OFF" as N_on
+state on {
+  state idle
+  state reading
+  state emergency
+
+  [*] -d-> idle
+  idle -l> [*]: shutoff_CO
+  idle -> reading: activate
+  reading -> idle: deactivate
+  reading -> emergency: when (CO level > threshold)
+  emergency -> reading: reset
+  --
+
+  state idle_temp
+  state active {
+    state "Air Release" as AR {
+      state low
+      state high
+
+      [*] -> low
+      low -> high: increase intensity
+      high -> low: decrease intensity
+      --
+      state warm
+      state hot
+
+      [*] -> warm
+      warm -> hot: increase temperature
+      hot -> warm: decrease temperature
+    }
+
+    state "Building Up Temperature" as BUT
+    state air_choice <<choice>>
+
+    [*] -> BUT
+    BUT -u-> air_choice: after(3m)
+    air_choice -l-> BUT: [furnace temperature < \ndesiredTemperature]
+    air_choice -l> AR: [furnace temperature ≥ \ndesiredTemperature]
+
+
+  }
+  note "<<State Behaviour>>\nOn Entry: Switch Orange ON; Start Timer\nOn Exit: Switch orange led OFF; Stop timer; Reset timer" as N_configuring
+  state configuring {
+    state waiting
+    state reading_temp
+    
+    [*] -> waiting
+    waiting -> reading_temp: set(timefrom, timeto, \ndesiredTemperature) \n/ reset timer
+    reading_temp -d-> reading_temp: set(timefrom, timeto, desiredTemperature) \n/ reset timer
+    reading_temp --> [*]: end
+  }
+
+  N_configuring -l> configuring 
+  [*] -r-> idle_temp
+  idle_temp -d-> [*]: shutoff_temp
+  idle_temp -u> active: activate \n[configured_and_timefrom ≤ timeNow < timeto_and_\ncurrent temperature < desired temperature]
+  idle_temp -r> configuring: configure / beep
+  active -d> idle_temp: done / 'click' sound
+  configuring -l> idle_temp: [inactivity > 1m]
+  configuring -l> idle_temp: cancel / prolonged beep
+  active -d-> configuring: configure / beep
+  configuring -u-> active: / double beep
+
+}
+N_on -d-> on
+[*] -> on
+on -> [*]: shutoff
+@enduml
+
+/' 
+1. PlantUML does not allow for 2 state to have the same name
+'/
