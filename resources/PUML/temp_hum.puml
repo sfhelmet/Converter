@@ -1,0 +1,96 @@
+@startuml "Temperature and Humidity Detector"
+state ON {
+    note "<<State Behavior>>\nDo: Green Led ON\nExit: Green Led OFF" as N_ACTIVE
+    state IDLE
+    state ACTIVE {
+        state error
+        state "skip_configuring" as ACTIVE_entry <<entryPoint>>
+        state CONFIGURING {
+            state T_READY
+            state T_READING
+            state j4 <<start>>
+            state c3 <<choice>>
+
+            [*] --> T_READY
+            T_READY -> T_READING: set T_Threshold
+            T_READY --> j4
+            T_READING -> T_READING: set T_Threshold
+            T_READING --> j4
+            j4 -> c3: done
+            c3 -> [*]: [not null]
+            --
+            state H_READY
+            state H_READING
+            state j5 <<start>>
+            state c4 <<choice>>
+
+            [*] --> H_READY
+            H_READY -> H_READING: set H_Threshold
+            H_READY --> j5
+            H_READING -> H_READING: set H_Threshold
+            H_READING --> j5
+            j5 -> c4: done
+            c4 -> [*]: [not null]
+        }
+        state MONITORING {
+            state "skip_configuring" as MONITORING_entry <<entryPoint>>
+            state READING {
+                note "<<State Behavior>>\nEntry: Read temperature-humidity" AS N_READING_IDLE
+                note "<<State Behavior>>\nEnter: Read temperature-humidity\nExit: switch orange-red led OFF" AS N_PROCESSING
+                state j2 <<start>>
+                state j3 <<start>>
+                state c2 <<choice>>
+                state READING_IDLE
+                state PROCESSING
+
+                [*] --> READING_IDLE
+                READING_IDLE -> j2
+                PROCESSING -l-> j2
+                j2 --> c2: after(10s)
+                c2 --> j3: [else]
+                c2 -l-> orange: [reading(s) in medium range]
+                c2 -> red: [reading(s) in high range]
+                orange --> j3
+                red --> j3
+                j3 -u-> PROCESSING
+                N_READING_IDLE -> READING_IDLE
+                N_PROCESSING --> PROCESSING
+            }
+            state EMERGENCY
+            [*] --> READING
+            READING -> EMERGENCY : when\n(tCurrent >= T_Threshold\nOR\nhcurrent >= H_Threshold)
+            EMERGENCY -l-> READING : reset
+        }
+
+        CONFIGURING_exit --> error
+        ACTIVE_entry --> MONITORING_entry
+        CONFIGURING --> error: when [inactivity > 2m]/ beep
+        error -u-> CONFIGURING: reset
+        [*] --> CONFIGURING
+        CONFIGURING -l-> CONFIGURING: reset
+        CONFIGURING -l-> MONITORING
+        MONITORING -> CONFIGURING: set
+    }
+    state j1 <<start>>
+
+    N_ACTIVE --> ACTIVE
+    [*] -u-> IDLE
+    IDLE -l-> j1 : [configured] activate without configuring
+    IDLE -l-> j1 : [configured] at(06:00)
+    IDLE -u-> ACTIVE : activate
+    IDLE -u-> ACTIVE : at(23:00)
+    ACTIVE --> IDLE : deactivate
+    IDLE -> [*] : when[inactivity > 2m]
+    j1 -u-> ACTIVE_entry
+}   
+state PAUSE
+state c1 <<choice>>
+[*] -> ON
+ON -> [*] : shut off
+ON -> [*]
+ON -l-> PAUSE : power out/ switch system to battery power
+PAUSE -u-> c1 : after(10s)
+c1 -u-> ON : [power on]
+c1 -> [*] : [no power]
+
+@enduml
