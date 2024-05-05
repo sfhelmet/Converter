@@ -4,6 +4,7 @@ FINAL_STATE = "[*]"
 ENTRY_STEREOTYPE = "entryPoint"
 EXIT_STEREOTYPE = "exitPoint"
 CHOICE_STEREOTYPE = "choice"
+JUNCTION_STEREOTYPE = "start"
 ARROW_TYPE = "-->"
 STATE_BEHAVIOR = "State Behavior"
 

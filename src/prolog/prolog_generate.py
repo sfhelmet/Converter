@@ -15,6 +15,7 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
     final_states = []
     super_states = []
     choice = []
+    junction = []
     entry_pseudostates = []
     exit_pseudostates = []
     on_entry_actions_list = []
@@ -23,7 +24,7 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
     internal_transitions_list = []
     for state_name in states:
         state = states[state_name]
-        if state.superstate or state.entry or state.exit:
+        if state.superstate or state.entry or state.exit or state.choice or state.junction:
             if state.superstate:
                 super_states.append(state.name)
             if state.entry:
@@ -39,6 +40,8 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
             final_states.append(state.name)
         if state.choice:
             choice.append(state.name)
+        if state.junction:
+            junction.append(state.name)
         if state.on_entry_actions:
             on_entry_actions_list.append(state.name)
         if state.do_actions:
@@ -62,18 +65,24 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
             prolog_code += f"{SUPERSTATE_PREFIX}({states[state].superstate}, {state}).\n"
 
     for state in choice:
-        prolog_code += f"{CHOICE_STATE_PREFIX}({state}). % choice state\n"
+        prolog_code += f"{CHOICE_STATE_PREFIX}({state}).\n"
+
+    for state in junction:
+        prolog_code += f"{JUNCTION_STATE_PREFIX}({state}).\n"
 
     for entry_pseudostate in entry_pseudostates:
+        print(entry_pseudostate)
         for transition in transitions:
             if transition.source == entry_pseudostate:
                 prolog_code += f"{ENTRY_PSEUDOSTATE_PREFIX}({entry_pseudostate}, {transition.destination}).\n"
+                transitions.remove(transition)
                 break
         
     for exit_pseudostate in exit_pseudostates:
         prolog_code += f"{EXIT_PSEUDOSTATE_PREFIX}({exit_pseudostate}, {states[exit_pseudostate].superstate}).\n"
 
     for on_entry_action_state in on_entry_actions_list:
+        print(on_entry_action_state)
         for action in states[on_entry_action_state].on_entry_actions:
             if action.parameter:
                 prolog_code += f"{ON_ENTRY_ACTION_PREFIX}({on_entry_action_state}, {create_action_string(action)}).\n"
