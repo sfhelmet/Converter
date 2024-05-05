@@ -13,12 +13,13 @@ from model.action import Action
 from src.puml.puml_constants import *
 from src.logger_config import logger
 
-ARROWSTICK_TYPE = {"-", "l", "r"}
+ARROWSTICK_TYPE = {"-", "l", "r", "u", "d"}
 
 def parse_plantuml(puml_file): 
     states = {}
     transitions = set()
     superstate_stack = []
+    region_level = 0
 
     instate_actions = {}
     with open(puml_file, 'r') as file:
@@ -34,10 +35,17 @@ def parse_plantuml(puml_file):
                 elif line.startswith(START_PUML):
                     logger.debug("Start of PlantUML file Found")
                     continue
-
+                
                 if line.isspace():
                     continue
                 
+                elif line.startswith("'"):
+                    continue
+
+                #TODO: Implement Region Parsing
+                elif line.strip() == "--":
+                    continue
+
                 elif line.startswith('}'):
                     superstate_stack.pop()
                     continue
@@ -68,7 +76,10 @@ def parse_plantuml(puml_file):
                     stereotype = line[left_stereotype + 2:right_stereotype]
                     if stereotype == CHOICE_STEREOTYPE:
                         new_state.choice = True
-            
+
+                    if stereotype == JUNCTION_STEREOTYPE:
+                        new_state.junction = True
+
                     if stereotype == ENTRY_STEREOTYPE:
                         new_state.entry = True
                         
@@ -77,6 +88,7 @@ def parse_plantuml(puml_file):
 
                     if line.split()[-1] == "{":
                         superstate_stack.append(state_name)
+                        region_level += 1
                     states[state_name] = (new_state)
 
                     logger.debug(f'"{state_name}" created')
@@ -89,7 +101,7 @@ def parse_plantuml(puml_file):
                         state_name_index = line.find("N_")
                         state_name = line[state_name_index+2:].strip()
 
-                        # state_behaviors = line[:state_name_index].split("\\n")
+                        state_behaviors = line[:state_name_index].split("\\n")
 
                         on_entry_index = line.find(NoteType.ON_ENTRY.value)
                         do_action_index = line.find(NoteType.DO_ACTION.value)
@@ -172,6 +184,12 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
         
     colon_index = transition.find(":")
     src = transition[:dash_index].strip()
+
+    # This makes sure an arrow is not inputed accidentally
+    if src == "":
+        logger.error(f'"{transition}" is not valid PlantUML')
+        return None
+        
     if colon_index == -1:
         dest = transition[greater_index + 1:].strip()
     else:
