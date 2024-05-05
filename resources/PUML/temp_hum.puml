@@ -4,7 +4,7 @@ state ON {
     state IDLE
     state ACTIVE {
         state error
-        state "skip_configuring" as ACTIVE_entry <<entryPoint>>
+        state ACTIVE_SKIP_CONFIGURING <<entryPoint>>
         state CONFIGURING {
             state T_READY
             state T_READING
@@ -32,8 +32,9 @@ state ON {
             j5 -> c4: done
             c4 -> [*]: [not null]
         }
+        ' ACTIVE: <<State Behavior>>\nDo: Green Led ON\nExit: Green Led OFF
         state MONITORING {
-            state "skip_configuring" as MONITORING_entry <<entryPoint>>
+            state MONITORING_SKIP_CONFIGURING <<entryPoint>>
             state READING {
                 note "<<State Behavior>>\nEntry: Read temperature-humidity" AS N_READING_IDLE
                 note "<<State Behavior>>\nEnter: Read temperature-humidity\nExit: switch orange-red led OFF" AS N_PROCESSING
@@ -61,9 +62,8 @@ state ON {
             READING -> EMERGENCY : when\n(tCurrent >= T_Threshold\nOR\nhcurrent >= H_Threshold)
             EMERGENCY -l-> READING : reset
         }
-
         CONFIGURING_exit --> error
-        ACTIVE_entry --> MONITORING_entry
+        ACTIVE_SKIP_CONFIGURING --> MONITORING_SKIP_CONFIGURING
         CONFIGURING --> error: when [inactivity > 2m]/ beep
         error -u-> CONFIGURING: reset
         [*] --> CONFIGURING
@@ -81,7 +81,7 @@ state ON {
     IDLE -u-> ACTIVE : at(23:00)
     ACTIVE --> IDLE : deactivate
     IDLE -> [*] : when[inactivity > 2m]
-    j1 -u-> ACTIVE_entry
+    j1 -u-> ACTIVE_SKIP_CONFIGURING
 }   
 state PAUSE
 state c1 <<choice>>
