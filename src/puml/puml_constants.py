@@ -25,9 +25,9 @@ class ActionType(Enum):
     LOG = "log"
 
 class NoteType(Enum):
-    ON_ENTRY = "On Entry"
-    DO_ACTION = "Do Action"
-    ON_EXIT =  "On Exit"
+    ON_ENTRY = "Entry"
+    DO_ACTION = "Do"
+    ON_EXIT =  "Exit"
     INTERNAL_TRANSITION = "Internal Transition"
 
 

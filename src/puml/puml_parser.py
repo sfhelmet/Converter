@@ -25,9 +25,7 @@ def parse_plantuml(puml_file):
     with open(puml_file, 'r') as file:
         
         for line in file:
-            if line.strip():
-                line = line.strip()
-                
+            if line := line.strip():                
                 if line.startswith(END_PUML):
                     logger.debug("End of PlantUML file Found")
                     break
@@ -42,7 +40,7 @@ def parse_plantuml(puml_file):
                 elif line.startswith("'"):
                     continue
 
-                elif line.strip() == "--":
+                elif line == "--":
                     region_stack[-1] += 1
                     states[superstate_stack[-1]].region_count += 1
                     continue
@@ -53,7 +51,7 @@ def parse_plantuml(puml_file):
                     continue
 
                 elif line.startswith('state '):
-                    state_name = line.split()[1]
+                    state_name = line.split()[1].lower()
 
                     # "state" can be a state name
                     if state_name[0] == "-":
@@ -62,65 +60,18 @@ def parse_plantuml(puml_file):
                         continue
 
                     states[state_name] = __create_state(line, state_name, states, instate_actions, superstate_stack, region_stack)
-                    
-                elif line.startswith('note '):
-                    left_stereotype = line.find("<<")
-                    right_stereotype = line.find(">>")
-                    stereotype = line[left_stereotype + 2:right_stereotype]
-                    if stereotype == STATE_BEHAVIOR:
-                        state_name_index = line.find("N_")
-                        state_name = line[state_name_index+2:].strip()
+                
+                elif (state_name := line[:line.find(":")].strip().lower()) in states and ">" not in line:
+                    entry_actions, do_actions, exit_actions, internal_transitions_set = __parse_state_behavior(line, state_name.lower())
+                    if state_name in states:
+                        states[state_name].on_entry_actions = entry_actions
+                        states[state_name].do_actions = do_actions
+                        states[state_name].on_exit_actions = exit_actions
+                        states[state_name].internal_transitions = internal_transitions_set
+                    else:
+                        instate_actions[state_name] = {"on_entry": entry_actions, "do_action": do_actions, "on_exit": exit_actions, "internal_transitions": internal_transitions_set}
 
-                        state_behaviors = line[:state_name_index].split("\\n")
-
-                        on_entry_index = line.find(NoteType.ON_ENTRY.value)
-                        do_action_index = line.find(NoteType.DO_ACTION.value)
-                        on_exit_index = line.find(NoteType.ON_EXIT.value)
-                        
-                        
-                        # ON ENTRY
-                        on_entry_string = line[on_entry_index:]
-                        start = on_entry_string.find(":")
-                        end = on_entry_string.find("\\n")
-
-                        _, _, entry_actions = __parse_ega("/" + on_entry_string[start + 1:end].strip())
-
-                        # DO ACTION
-                        do_action_string = line[do_action_index:]
-                        start = do_action_string.find(":")
-                        end = do_action_string.find("\\n")
-
-                        _, _, do_actions = __parse_ega("/" + do_action_string[start + 1:end].strip())
-
-                        # ON EXIT
-                        on_exit_string = line[on_exit_index:]
-                        start = on_exit_string.find(":")
-                        end = on_exit_string.find("\\n")
-
-                        _, _, exit_actions = __parse_ega("/" + on_exit_string[start + 1:end])
-
-                        # INTERNAL TRANSITIONS
-                        internal_transitions_index = line.find(NoteType.INTERNAL_TRANSITION.value)
-                        internal_transitions_set = set()
-                        if internal_transitions_index != -1:
-                            internal_transitions = line[internal_transitions_index:].split("\\n")
-                            
-                            for internal_transition in internal_transitions:
-                                if internal_transition.startswith(NoteType.INTERNAL_TRANSITION.value):
-                                    internal_transitions_set.add(Transition(state_name, state_name, *__parse_ega(internal_transition)))
-                            
-                        if state_name in states:
-                            states[state_name].on_entry_actions = entry_actions
-                            states[state_name].do_actions = do_actions
-                            states[state_name].on_exit_actions = exit_actions
-                            states[state_name].internal_transitions = internal_transitions_set
-                        else:
-                            instate_actions[state_name] = {"on_entry": entry_actions, "do_action": do_actions, "on_exit": exit_actions, "internal_transitions": internal_transitions_set}
-
-                        logger.debug(f'State Behavior of "{state_name}" created')
-
-                elif line.startswith('N_'):
-                    pass
+                    logger.debug(f'State Behavior of "{state_name}" created')
 
                 else:
                     new_transition = __parse_transition(line, states, superstate_stack, region_stack)
@@ -129,11 +80,49 @@ def parse_plantuml(puml_file):
                             states[superstate_stack[-1]].transitions.add(new_transition)
                             transitions.add(new_transition)  
                         else:
-                            transitions.add(new_transition)            
+                            transitions.add(new_transition)         
     return states, transitions
 
+def __parse_state_behavior(line: str, state_name: str):
+    on_entry_index = line.find(NoteType.ON_ENTRY.value)
+    do_action_index = line.find(NoteType.DO_ACTION.value)
+    on_exit_index = line.find(NoteType.ON_EXIT.value)
+
+    # ON ENTRY
+    on_entry_string = line[on_entry_index:]
+    start = on_entry_string.find(":")
+    end = on_entry_string.find("\\n")
+
+    _, _, entry_actions = __parse_ega("/" + on_entry_string[start + 1:end].strip())
+
+    # DO ACTION
+    do_action_string = line[do_action_index:]
+    start = do_action_string.find(":")
+    end = do_action_string.find("\\n")
+
+    _, _, do_actions = __parse_ega("/" + do_action_string[start + 1:end].strip())
+
+    # ON EXIT
+    on_exit_string = line[on_exit_index:]
+    start = on_exit_string.find(":")
+    end = on_exit_string.find("\\n")
+
+    _, _, exit_actions = __parse_ega("/" + on_exit_string[start + 1:end])
+
+    # INTERNAL TRANSITIONS
+    internal_transitions_index = line.find(NoteType.INTERNAL_TRANSITION.value)
+    internal_transitions_set = set()
+    if internal_transitions_index != -1:
+        internal_transitions = line[internal_transitions_index:].split("\\n")
+        
+        for internal_transition in internal_transitions:
+            if internal_transition.startswith(NoteType.INTERNAL_TRANSITION.value):
+                internal_transitions_set.add(Transition(state_name, state_name, *__parse_ega(internal_transition)))
+    
+    return entry_actions, do_actions, exit_actions, internal_transitions_set
+
 def __create_state(line: str, state_name: str, states: dict[str, State], instate_actions: dict[str, dict[str, list[str] | set[str]]], superstate_stack: list[str], region_stack: list[int]) -> State:
-    new_state = State(state_name)
+    new_state = State(state_name.lower())
     if state_name in instate_actions:
         state_behavior = instate_actions[state_name]
         new_state.on_entry_actions = state_behavior["on_entry"]
@@ -165,6 +154,12 @@ def __create_state(line: str, state_name: str, states: dict[str, State], instate
         superstate_stack.append(state_name)
         region_stack.append(1)
     
+    entry_actions, do_actions, exit_actions, internal_transitions_set = __parse_state_behavior(line, state_name.lower())
+    new_state.on_entry_actions = entry_actions
+    new_state.do_actions = do_actions
+    new_state.on_exit_actions = exit_actions
+    new_state.internal_transitions = internal_transitions_set
+
     logger.debug(f'"{state_name}" created')
     return new_state
 
@@ -189,7 +184,7 @@ def __parse_transition(transition: str, states: dict[str:State], superstate_stac
             return None
         
     colon_index = transition.find(":")
-    src = transition[:dash_index].strip()
+    src = transition[:dash_index].strip().lower()
 
     # This makes sure an arrow is not inputed accidentally
     if src == "":
@@ -197,9 +192,9 @@ def __parse_transition(transition: str, states: dict[str:State], superstate_stac
         return None
         
     if colon_index == -1:
-        dest = transition[greater_index + 1:].strip()
+        dest = transition[greater_index + 1:].strip().lower()
     else:
-        dest = transition[greater_index + 1: colon_index].strip()
+        dest = transition[greater_index + 1: colon_index].strip().lower()
 
         ega = transition[colon_index + 1:]
         events, guards, actions = __parse_ega(ega)

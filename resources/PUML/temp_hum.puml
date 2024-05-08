@@ -1,6 +1,5 @@
 @startuml "Temperature and Humidity Detector"
 state ON {
-    note "<<State Behavior>>\nDo: Green Led ON\nExit: Green Led OFF" as N_ACTIVE
     state IDLE
     state ACTIVE {
         state error
@@ -32,17 +31,15 @@ state ON {
             j5 -> c4: done
             c4 -> [*]: [not null]
         }
-        ' ACTIVE: <<State Behavior>>\nDo: Green Led ON\nExit: Green Led OFF
+        ACTIVE: Do: Green Led ON\nExit: Green Led OFF
         state MONITORING {
             state MONITORING_SKIP_CONFIGURING <<entryPoint>>
             state READING {
-                note "<<State Behavior>>\nEntry: Read temperature-humidity" AS N_READING_IDLE
-                note "<<State Behavior>>\nEnter: Read temperature-humidity\nExit: switch orange-red led OFF" AS N_PROCESSING
                 state j2 <<start>>
                 state j3 <<start>>
                 state c2 <<choice>>
-                state READING_IDLE
-                state PROCESSING
+                state READING_IDLE: Entry: Read temperature-humidity
+                state PROCESSING: Enter: Read temperature-humidity\nExit: switch orange-red led OFF
 
                 [*] --> READING_IDLE
                 READING_IDLE -> j2
@@ -54,8 +51,6 @@ state ON {
                 orange --> j3
                 red --> j3
                 j3 -u-> PROCESSING
-                N_READING_IDLE -> READING_IDLE
-                N_PROCESSING --> PROCESSING
             }
             state EMERGENCY
             [*] --> READING
@@ -73,7 +68,6 @@ state ON {
     }
     state j1 <<start>>
 
-    N_ACTIVE --> ACTIVE
     [*] -u-> IDLE
     IDLE -l-> j1 : [configured] activate without configuring
     IDLE -l-> j1 : [configured] at(06:00)
