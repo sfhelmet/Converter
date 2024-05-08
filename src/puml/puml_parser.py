@@ -42,7 +42,6 @@ def parse_plantuml(puml_file):
                 elif line.startswith("'"):
                     continue
 
-                #TODO: Implement Region Parsing
                 elif line.strip() == "--":
                     region_stack[-1] += 1
                     states[superstate_stack[-1]].region_count += 1
@@ -59,46 +58,11 @@ def parse_plantuml(puml_file):
                     # "state" can be a state name
                     if state_name[0] == "-":
                         logger.warning('state name "state" found')
-                        transitions.add(__parse_transition(line, states, transitions, superstate_stack, region_stack))
+                        transitions.add(__parse_transition(line, states, superstate_stack, region_stack))
                         continue
 
-                    new_state = State(state_name)
-                    if state_name in instate_actions:
-                        state_behavior = instate_actions[state_name]
-                        new_state.on_entry_actions = state_behavior["on_entry"]
-                        new_state.do_actions = state_behavior["do_action"]
-                        new_state.on_exit_actions = state_behavior["on_exit"]
-                        new_state.internal_transitions = state_behavior["internal_transitions"]
-
-                        instate_actions.pop(state_name)
+                    states[state_name] = __create_state(line, state_name, states, instate_actions, superstate_stack, region_stack)
                     
-                    new_state.region = region_stack[-1]
-                    __connect_superstate(new_state, superstate_stack, states)
-                    
-                    left_stereotype = line.find("<<")
-                    right_stereotype = line.find(">>")
-                    stereotype = line[left_stereotype + 2:right_stereotype]
-                    if stereotype == CHOICE_STEREOTYPE:
-                        new_state.choice = True
-
-                    if stereotype == JUNCTION_STEREOTYPE:
-                        new_state.junction = True
-
-                    if stereotype == ENTRY_STEREOTYPE:
-                        new_state.entry = True
-                        
-                    if stereotype == EXIT_STEREOTYPE:
-                        new_state.exit = True
-
-                    if line.split()[-1] == "{":
-                        superstate_stack.append(state_name)
-                        region_stack.append(1)
-
-            
-                    states[state_name] = (new_state)
-                    
-                    logger.debug(f'"{state_name}" created')
-
                 elif line.startswith('note '):
                     left_stereotype = line.find("<<")
                     right_stereotype = line.find(">>")
@@ -159,7 +123,7 @@ def parse_plantuml(puml_file):
                     pass
 
                 else:
-                    new_transition = __parse_transition(line, states, transitions, superstate_stack, region_stack)
+                    new_transition = __parse_transition(line, states, superstate_stack, region_stack)
                     if new_transition:
                         if len(superstate_stack) != 0:
                             states[superstate_stack[-1]].transitions.add(new_transition)
@@ -168,13 +132,49 @@ def parse_plantuml(puml_file):
                             transitions.add(new_transition)            
     return states, transitions
 
-def __connect_superstate(state: State, superstate_stack: list[str], states: dict[str:State]):
+def __create_state(line: str, state_name: str, states: dict[str, State], instate_actions: dict[str, dict[str, list[str] | set[str]]], superstate_stack: list[str], region_stack: list[int]) -> State:
+    new_state = State(state_name)
+    if state_name in instate_actions:
+        state_behavior = instate_actions[state_name]
+        new_state.on_entry_actions = state_behavior["on_entry"]
+        new_state.do_actions = state_behavior["do_action"]
+        new_state.on_exit_actions = state_behavior["on_exit"]
+        new_state.internal_transitions = state_behavior["internal_transitions"]
+
+        instate_actions.pop(state_name)
+    
+    new_state.region = region_stack[-1]
+    __connect_superstate(new_state, superstate_stack, states)
+    
+    left_stereotype = line.find("<<")
+    right_stereotype = line.find(">>")
+    stereotype = line[left_stereotype + 2:right_stereotype]
+    if stereotype == CHOICE_STEREOTYPE:
+        new_state.choice = True
+
+    if stereotype == JUNCTION_STEREOTYPE:
+        new_state.junction = True
+
+    if stereotype == ENTRY_STEREOTYPE:
+        new_state.entry = True
+        
+    if stereotype == EXIT_STEREOTYPE:
+        new_state.exit = True
+
+    if line.split()[-1] == "{":
+        superstate_stack.append(state_name)
+        region_stack.append(1)
+    
+    logger.debug(f'"{state_name}" created')
+    return new_state
+
+def __connect_superstate(state: State, superstate_stack: list[str], states: dict[str:State]) -> None:
     if len(superstate_stack) >= 1:
         state.superstate = superstate_stack[-1]
         states[superstate_stack[-1]].substates.add(state.name)
 
         
-def __parse_transition(transition: str, states: dict[str:State], transitions: set[Transition], superstate_stack: list[str], region_stack: list[int]) -> Transition:
+def __parse_transition(transition: str, states: dict[str:State], superstate_stack: list[str], region_stack: list[int]) -> Transition:
     events, guards, actions = [], [] ,[]
     dash_index = transition.find("-")
     greater_index = transition.find(">")
@@ -239,7 +239,7 @@ def __parse_transition(transition: str, states: dict[str:State], transitions: se
     logger.debug(f'"{new_transition.source}" to "{new_transition.destination}" created')
     return new_transition
     
-def __parse_ega(ega: str):
+def __parse_ega(ega: str) -> tuple[Event, Guard, Action]:
     slash = ega.find("/")
     l_bracket = ega.find("[")
     r_bracket = ega.find("]")

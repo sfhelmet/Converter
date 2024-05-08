@@ -23,6 +23,7 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
     do_actions_list = []
     on_exit_actions_list = []
     internal_transitions_list = []
+    
     for state_name in states:
         state = states[state_name]
         if state.superstate or state.entry or state.exit or state.choice or state.junction:
