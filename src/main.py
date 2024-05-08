@@ -57,4 +57,7 @@ def main():
         logger.info(output_file + " has been generated")
 
 if __name__ == "__main__":
+    import time
+    start_time = time.time()
     main()
+    logger.info("%s ms -" % ((time.time() - start_time) * 1000) )

@@ -42,7 +42,7 @@ def parse_plantuml(puml_file):
 
                 elif line == "--":
                     region_stack[-1] += 1
-                    states[superstate_stack[-1]].region_count += 1
+                    states[superstate_stack[-1]].region_count = str(int(states[superstate_stack[-1]].region_count) + 1)
                     continue
 
                 elif line.startswith('}'):
@@ -51,7 +51,7 @@ def parse_plantuml(puml_file):
                     continue
 
                 elif line.startswith('state '):
-                    state_name = line.split()[1].lower()
+                    state_name = line.split()[1].lower() if line.split()[1][-1] != ":" else line.split()[1][:-1].lower()
 
                     # "state" can be a state name
                     if state_name[0] == "-":
@@ -132,7 +132,7 @@ def __create_state(line: str, state_name: str, states: dict[str, State], instate
 
         instate_actions.pop(state_name)
     
-    new_state.region = region_stack[-1]
+    new_state.region = str(region_stack[-1])
     __connect_superstate(new_state, superstate_stack, states)
     
     left_stereotype = line.find("<<")

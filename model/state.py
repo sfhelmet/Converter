@@ -16,5 +16,5 @@ class State:
         self.on_entry_actions = []
         self.do_actions = []
         self.internal_transitions = set()
-        self.region: int = 1
+        self.region: str = "1"
         self.region_count: int = 1

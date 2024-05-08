@@ -64,19 +64,19 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
 
     for state in super_states:
         if not states[state].entry and not states[state].exit:
-            if states[states[state].superstate].region_count > 1:
+            if int(states[states[state].superstate].region_count) > 1:
                 regions.add(states[state].superstate)
             else:
                 prolog_code += f"{SUPERSTATE_PREFIX}({states[state].superstate}, {state}).\n"
-    
-    for region_state in regions:
-        for i in range(1, states[region_state].region_count + 1):
-            prolog_code += f"{REGION_PREFIX}({region_state}, {region_state}_r{i}).\n"
 
     for region_state in regions:
         for sub_region_state in states[region_state].substates:
 
             prolog_code += f"{SUPERSTATE_PREFIX}({region_state}_r{states[sub_region_state].region}, {sub_region_state}).\n"
+
+    for region_state in regions:
+        for i in range(1, int(states[region_state].region_count) + 1):
+            prolog_code += f"{REGION_PREFIX}({region_state}, {region_state}_r{i}).\n"
 
     for state in choice:
         prolog_code += f"{CHOICE_STATE_PREFIX}({state}).\n"

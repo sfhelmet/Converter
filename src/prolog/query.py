@@ -45,8 +45,11 @@ def get_entry_pseudostate(entry, substate):
 def get_exit_pseudostate(exit, superstate):
   return __query_relation("exit_pseudostate", exit, superstate)
 
-def get_superstate(superstate, substate):
+def get_substate(superstate, substate):
   return __query_relation("substate", superstate, substate)
+
+def get_region(superstate, region):
+  return __query_relation("region", superstate, region)
 
 def get_onentry_action(var_name, action):
   return __query_relation("onentry_action", var_name, action)
