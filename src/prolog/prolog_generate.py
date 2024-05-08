@@ -71,7 +71,6 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         prolog_code += f"{JUNCTION_STATE_PREFIX}({state}).\n"
 
     for entry_pseudostate in entry_pseudostates:
-        print(entry_pseudostate)
         for transition in transitions:
             if transition.source == entry_pseudostate:
                 prolog_code += f"{ENTRY_PSEUDOSTATE_PREFIX}({entry_pseudostate}, {transition.destination}).\n"
@@ -82,7 +81,6 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         prolog_code += f"{EXIT_PSEUDOSTATE_PREFIX}({exit_pseudostate}, {states[exit_pseudostate].superstate}).\n"
 
     for on_entry_action_state in on_entry_actions_list:
-        print(on_entry_action_state)
         for action in states[on_entry_action_state].on_entry_actions:
             if action.parameter:
                 prolog_code += f"{ON_ENTRY_ACTION_PREFIX}({on_entry_action_state}, {create_action_string(action)}).\n"
