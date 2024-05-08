@@ -121,7 +121,7 @@ def __parse_state_behavior(line: str, state_name: str):
     
     return entry_actions, do_actions, exit_actions, internal_transitions_set
 
-def __create_state(line: str, state_name: str, states: dict[str, State], instate_actions: dict[str, dict[str, list[str] | set[str]]], superstate_stack: list[str], region_stack: list[int]) -> State:
+def __create_state(line: str, state_name: str, states: dict[str, State], instate_actions: dict[str, dict], superstate_stack: list[str], region_stack: list[int]) -> State:
     new_state = State(state_name.lower())
     if state_name in instate_actions:
         state_behavior = instate_actions[state_name]
