@@ -16,12 +16,12 @@ from src.logger_config import logger
 ARROWSTICK_TYPE = {"-", "l", "r", "u", "d"}
 
 def parse_plantuml(puml_file): 
-    states = {}
-    transitions = set()
-    superstate_stack = []
-    region_level = 0
+    states: dict[str, State] = {}
+    transitions: set[Transition] = set()
+    superstate_stack: list[str] = []
+    region_stack: list[int] = [1]
 
-    instate_actions = {}
+    instate_actions: dict[str, dict[str, list[str] | set[str]]] = {}
     with open(puml_file, 'r') as file:
         
         for line in file:
@@ -44,10 +44,13 @@ def parse_plantuml(puml_file):
 
                 #TODO: Implement Region Parsing
                 elif line.strip() == "--":
+                    region_stack[-1] += 1
+                    states[superstate_stack[-1]].region_count += 1
                     continue
 
                 elif line.startswith('}'):
                     superstate_stack.pop()
+                    region_stack.pop()
                     continue
 
                 elif line.startswith('state '):
@@ -56,7 +59,7 @@ def parse_plantuml(puml_file):
                     # "state" can be a state name
                     if state_name[0] == "-":
                         logger.warning('state name "state" found')
-                        transitions.add(parse_transition(line, states, transitions, superstate_stack))
+                        transitions.add(__parse_transition(line, states, transitions, superstate_stack, region_stack))
                         continue
 
                     new_state = State(state_name)
@@ -68,8 +71,9 @@ def parse_plantuml(puml_file):
                         new_state.internal_transitions = state_behavior["internal_transitions"]
 
                         instate_actions.pop(state_name)
-                        
-                    connect_superstate(new_state, superstate_stack, states)
+                    
+                    new_state.region = region_stack[-1]
+                    __connect_superstate(new_state, superstate_stack, states)
                     
                     left_stereotype = line.find("<<")
                     right_stereotype = line.find(">>")
@@ -88,9 +92,11 @@ def parse_plantuml(puml_file):
 
                     if line.split()[-1] == "{":
                         superstate_stack.append(state_name)
-                        region_level += 1
-                    states[state_name] = (new_state)
+                        region_stack.append(1)
 
+            
+                    states[state_name] = (new_state)
+                    
                     logger.debug(f'"{state_name}" created')
 
                 elif line.startswith('note '):
@@ -113,21 +119,21 @@ def parse_plantuml(puml_file):
                         start = on_entry_string.find(":")
                         end = on_entry_string.find("\\n")
 
-                        _, _, entry_actions = parse_ega("/" + on_entry_string[start + 1:end].strip())
+                        _, _, entry_actions = __parse_ega("/" + on_entry_string[start + 1:end].strip())
 
                         # DO ACTION
                         do_action_string = line[do_action_index:]
                         start = do_action_string.find(":")
                         end = do_action_string.find("\\n")
 
-                        _, _, do_actions = parse_ega("/" + do_action_string[start + 1:end].strip())
+                        _, _, do_actions = __parse_ega("/" + do_action_string[start + 1:end].strip())
 
                         # ON EXIT
                         on_exit_string = line[on_exit_index:]
                         start = on_exit_string.find(":")
                         end = on_exit_string.find("\\n")
 
-                        _, _, exit_actions = parse_ega("/" + on_exit_string[start + 1:end])
+                        _, _, exit_actions = __parse_ega("/" + on_exit_string[start + 1:end])
 
                         # INTERNAL TRANSITIONS
                         internal_transitions_index = line.find(NoteType.INTERNAL_TRANSITION.value)
@@ -137,7 +143,7 @@ def parse_plantuml(puml_file):
                             
                             for internal_transition in internal_transitions:
                                 if internal_transition.startswith(NoteType.INTERNAL_TRANSITION.value):
-                                    internal_transitions_set.add(Transition(state_name, state_name, *parse_ega(internal_transition)))
+                                    internal_transitions_set.add(Transition(state_name, state_name, *__parse_ega(internal_transition)))
                             
                         if state_name in states:
                             states[state_name].on_entry_actions = entry_actions
@@ -153,7 +159,7 @@ def parse_plantuml(puml_file):
                     pass
 
                 else:
-                    new_transition = parse_transition(line, states, transitions, superstate_stack)
+                    new_transition = __parse_transition(line, states, transitions, superstate_stack, region_stack)
                     if new_transition:
                         if len(superstate_stack) != 0:
                             states[superstate_stack[-1]].transitions.add(new_transition)
@@ -162,13 +168,13 @@ def parse_plantuml(puml_file):
                             transitions.add(new_transition)            
     return states, transitions
 
-def connect_superstate(state: State, superstate_stack: list[str], states: dict[str:State]):
+def __connect_superstate(state: State, superstate_stack: list[str], states: dict[str:State]):
     if len(superstate_stack) >= 1:
         state.superstate = superstate_stack[-1]
         states[superstate_stack[-1]].substates.add(state.name)
 
         
-def parse_transition(transition: str, states: dict[str:State], transitions: set[Transition], superstate_stack) -> Transition:
+def __parse_transition(transition: str, states: dict[str:State], transitions: set[Transition], superstate_stack: list[str], region_stack: list[int]) -> Transition:
     events, guards, actions = [], [] ,[]
     dash_index = transition.find("-")
     greater_index = transition.find(">")
@@ -196,7 +202,7 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
         dest = transition[greater_index + 1: colon_index].strip()
 
         ega = transition[colon_index + 1:]
-        events, guards, actions = parse_ega(ega)
+        events, guards, actions = __parse_ega(ega)
 
     if src not in states and src != INITIAL_STATE:
         new_state = State(src)
@@ -215,22 +221,25 @@ def parse_transition(transition: str, states: dict[str:State], transitions: set[
     elif dest == FINAL_STATE:
         if len(superstate_stack) == 0:
             dest = "final"
+        elif region_stack[-1] > 1:
+            dest = superstate_stack[-1] + "_final" + str(region_stack[-1])
         else:
             dest = superstate_stack[-1] + "_final"
+
         if dest not in states:
             new_state = State(dest)
             new_state.is_final = True
             states[dest] = new_state
             logger.debug(f'"{dest}" created by transition')
 
-    connect_superstate(states[src], superstate_stack, states)
-    connect_superstate(states[dest], superstate_stack, states)
+    __connect_superstate(states[src], superstate_stack, states)
+    __connect_superstate(states[dest], superstate_stack, states)
     
     new_transition = Transition(src, dest, events=events, guards=guards, actions=actions)
     logger.debug(f'"{new_transition.source}" to "{new_transition.destination}" created')
     return new_transition
     
-def parse_ega(ega: str):
+def __parse_ega(ega: str):
     slash = ega.find("/")
     l_bracket = ega.find("[")
     r_bracket = ega.find("]")
