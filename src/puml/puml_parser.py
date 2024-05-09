@@ -37,10 +37,10 @@ def parse_plantuml(puml_file):
                 if line.isspace():
                     continue
                 
-                elif line.startswith("'"):
+                elif line.startswith("'") or line.startswith("note"):
                     continue
 
-                elif line == "--":
+                elif line == REGION_SEPERATOR_HORIZONTAL or line == REGION_SEPERATOR_VERTICAL:
                     region_stack[-1] += 1
                     states[superstate_stack[-1]].region_count = str(int(states[superstate_stack[-1]].region_count) + 1)
                     continue
@@ -61,7 +61,7 @@ def parse_plantuml(puml_file):
 
                     states[state_name] = __create_state(line, state_name, states, instate_actions, superstate_stack, region_stack)
                 
-                elif (state_name := line[:line.find(":")].strip().lower()) in states and ">" not in line:
+                elif (state_name := line[:line.find(":")].strip().lower()) in states and ">" not in line and ":" in line:
                     entry_actions, do_actions, exit_actions, internal_transitions_set = __parse_state_behavior(line, state_name.lower())
                     if state_name in states:
                         states[state_name].on_entry_actions = entry_actions
@@ -88,24 +88,26 @@ def __parse_state_behavior(line: str, state_name: str):
     do_action_index = line.find(NoteType.DO_ACTION.value)
     on_exit_index = line.find(NoteType.ON_EXIT.value)
 
+    fix = lambda x: x if x != -1 else len(line)
+
     # ON ENTRY
     on_entry_string = line[on_entry_index:]
     start = on_entry_string.find(":")
-    end = on_entry_string.find("\\n")
+    end = fix(on_entry_string.find("\\n"))
 
     _, _, entry_actions = __parse_ega("/" + on_entry_string[start + 1:end].strip())
 
     # DO ACTION
     do_action_string = line[do_action_index:]
     start = do_action_string.find(":")
-    end = do_action_string.find("\\n")
+    end = fix(do_action_string.find("\\n"))
 
     _, _, do_actions = __parse_ega("/" + do_action_string[start + 1:end].strip())
 
     # ON EXIT
     on_exit_string = line[on_exit_index:]
     start = on_exit_string.find(":")
-    end = on_exit_string.find("\\n")
+    end = fix(on_exit_string.find("\\n"))
 
     _, _, exit_actions = __parse_ega("/" + on_exit_string[start + 1:end])
 
@@ -154,11 +156,12 @@ def __create_state(line: str, state_name: str, states: dict[str, State], instate
         superstate_stack.append(state_name)
         region_stack.append(1)
     
-    entry_actions, do_actions, exit_actions, internal_transitions_set = __parse_state_behavior(line, state_name.lower())
-    new_state.on_entry_actions = entry_actions
-    new_state.do_actions = do_actions
-    new_state.on_exit_actions = exit_actions
-    new_state.internal_transitions = internal_transitions_set
+    if ":" in line:
+        entry_actions, do_actions, exit_actions, internal_transitions_set = __parse_state_behavior(line, state_name.lower())
+        new_state.on_entry_actions = entry_actions
+        new_state.do_actions = do_actions
+        new_state.on_exit_actions = exit_actions
+        new_state.internal_transitions = internal_transitions_set
 
     logger.debug(f'"{state_name}" created')
     return new_state
@@ -224,6 +227,7 @@ def __parse_transition(transition: str, states: dict[str:State], superstate_stac
         if dest not in states:
             new_state = State(dest)
             new_state.is_final = True
+            new_state.region = str(region_stack[-1])
             states[dest] = new_state
             logger.debug(f'"{dest}" created by transition')
 
