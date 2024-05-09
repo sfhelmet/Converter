@@ -28,13 +28,31 @@ def parse_prolog():
     transitions = set()
     transitions_list = get_transition("X", "Y", "E", "G", "A")
 
-    superstate_pairs = get_superstate("Superstate", "Substate")
+    region_list = get_region("Sup", "Region")
+    region_count = {}
+    regions = set()
+
+    for region_object in region_list:
+        sup = region_object["Sup"]
+        region = region_object["Region"]
+
+        region_count[sup] = region_count.get(sup, 0) + 1
+        regions.add(region)
+
+    superstate_pairs = get_substate("Superstate", "Substate")
     for pair in superstate_pairs:
         sup = pair["Superstate"]
         sub = pair["Substate"]
-        states[sup].substates.add(sub)
+
         states[sub] = State(sub)
-        states[sub].superstate = sup
+        if sup in regions:
+            states[sub].region = sup
+        else:
+            states[sup].substates.add(sub)
+            states[sub].superstate = sup
+
+    for region_name in region_count:
+        states[region_name].region_count = region_count[region_name]
 
     for transition in transitions_list:
         src = transition["X"]
@@ -43,14 +61,17 @@ def parse_prolog():
         guard = parse_guard(transition["G"])
         action = parse_action(transition["A"])
         
+        if src not in states or dest not in states:
+            continue
+        
         new_transitions = Transition(src, dest, event, guard, action)
-        src_superstate = get_superstate("Sup", src)
-        dest_superstate = get_superstate("Sup", dest)
+        src_superstate = states[src].superstate
+        dest_superstate = states[dest].superstate
 
-        if len(src_superstate) == 0 and len(dest_superstate) == 0:
+        if not src_superstate and not dest_superstate:
             transitions.add(new_transitions)
 
-        elif len(src_superstate) == 0:
+        elif not src_superstate:
             states[states[dest].superstate].transitions.add(new_transitions)
         else:
             states[states[src].superstate].transitions.add(new_transitions)    
@@ -63,7 +84,7 @@ def parse_prolog():
     i = 1
     for initial_state in initial_states:
         states[initial_state["X"]].is_initial = True
-        superstate = get_superstate("Sup", initial_state["X"])
+        superstate = get_substate("Sup", initial_state["X"])
         if len(superstate) == 0:
             transitions.add(Transition(f"__INIT{i}", initial_state["X"]))
         else:
@@ -90,23 +111,26 @@ def parse_prolog():
     for on_exit_action in on_exit_actions:
         state = on_exit_action["State"]
         action = on_exit_action["Action"]
-        type = get_params(action)[0]
+        action_type = get_params(action)[0]
         param = bytes_to_string(get_params(action)[1])
-        states[state].on_exit_actions.append(Action(type, param))
+        # states[state].on_exit_actions.append(Action(type, param))
+        add_item(states, state, "on_exit_actions", Action(action_type, param))
 
     on_entry_actions = get_onentry_action("State", "Action")
     for on_entry_action in on_entry_actions:
         state = on_entry_action["State"]
         action = on_entry_action["Action"]
-        type = get_params(action)[0]
+        action_type = get_params(action)[0]
         param = bytes_to_string(get_params(action)[1])
-        states[state].on_entry_actions.append(Action(type, param))
+        # states[state].on_entry_actions.append(Action(type, param))
+        add_item(states, state, "on_entry_actions", Action(action_type, param))
         
     do_actions = get_do_action("State", "Proc")
     for do_action in do_actions:
         state = do_action["State"]
         procedure = do_action["Proc"]
-        states[state].do_actions.append(Proc(bytes_to_string(get_params(procedure)[0])))
+        # states[state].do_actions.append(Proc(bytes_to_string(get_params(procedure)[0])))
+        add_item(states, state, "do_actions", Proc(bytes_to_string(get_params(procedure)[0])))
 
     internal_trasitions = get_internal_transition("State", "Event", "Guard", "Action")
     for internal_transition in internal_trasitions:
@@ -116,15 +140,21 @@ def parse_prolog():
         action = parse_action(internal_transition["Action"])
         
         transition = Transition(state, state, event, guard, action)
-        states[state].internal_transitions.add(transition)
-
+        # states[state].internal_transitions.add(transition)
+        add_item(states, state, "internal_transitions", transition)
 
     logger.debug("End of Reading Prolog File")
     return states, transitions  
 
+def add_item(states, state, name, what):
+    if state not in states:
+        logger.warning(f"State {state} does not exists, ignoring {name}: {what}")
+    else:
+        getattr(states[state], name).add(what)
+
 def parse_event(transition_event) -> list[Event]:
     if transition_event == NIL:
-            event = []
+        event = []
 
     else:
         event_params = get_params(transition_event)
@@ -137,7 +167,7 @@ def parse_event(transition_event) -> list[Event]:
 def parse_guard(transition_guard) -> list[Guard]:
     if transition_guard == NIL:
         guards_list = []
-
+    
     else:
         guards_str = bytes_to_string(transition_guard).strip()
         guards = guards_str.split(";")
@@ -145,21 +175,34 @@ def parse_guard(transition_guard) -> list[Guard]:
         for guard in guards:
             guard_condition = guard.strip()
             guards_list.append(Guard(guard_condition))
-            
     return guards_list
 
 def parse_action(transition_action) -> list[Action]:
-    if transition_action == NIL:
-        actions_list = []
+    actions_list = []
 
+    if transition_action == NIL:
+        return actions_list
+
+    if type(transition_action) is list:
+        for action in transition_action:
+            actions_params = get_params(action)
+            action_type = actions_params[0].strip()
+            action_parameter = bytes_to_string(actions_params[1])
+            actions_list.append(Action(action_type, action_parameter))
+                    
     else:
         actions_params = get_params(transition_action)
         action_type = actions_params[0].strip()
         action_parameter = bytes_to_string(actions_params[1])
-        actions_list = []
         actions_list.append(Action(action_type, action_parameter))
 
     return actions_list
+
+def create_action(action_string):
+    actions_params = get_params(action_string)
+    action_type = actions_params[0].strip()
+    action_parameter = bytes_to_string(actions_params[1])
+    return Action(action_type, action_parameter)
 
 def bytes_to_string(string):
   if str(type(string)) == BYTES_TYPE_AS_STRING:
