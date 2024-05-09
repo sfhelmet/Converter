@@ -34,4 +34,5 @@ class NoteType(Enum):
 EVENT_TYPES = {EventType.CALL, EventType.SIGNAL, EventType.TIME, EventType.CHANGE, EventType.INACTIVITY, EventType.UPDATE, EventType.COMPLETION} 
 NOTE_TYPES = {NoteType.ON_ENTRY, NoteType.DO_ACTION, NoteType.ON_EXIT}
 
-
+REGION_SEPERATOR_VERTICAL = "||"
+REGION_SEPERATOR_HORIZONTAL = "--"
