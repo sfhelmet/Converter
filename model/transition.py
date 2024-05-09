@@ -9,3 +9,6 @@ class Transition:
         self.events = events
         self.guards = guards
         self.actions = actions
+
+    def __str__(self) -> str:
+        return f"{self.source} -> {self.destination} : {self.events} : {self.guards} : {self.actions}"
