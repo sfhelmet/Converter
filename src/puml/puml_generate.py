@@ -10,7 +10,6 @@ from puml.puml_constants import *
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
     plantuml_code = f"{START_PUML}\n\n"
-
     # Generate States
     for state in states:
         if states[state].superstate:
@@ -89,8 +88,9 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
             for internal_transition in internal_transitions:
                 substate_code += f"{NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition)}\\n"
         substate_code += f'" as N_{state.name} \n'
-
-    substate_code += f"{indent_str}state {state.name}"      
+    
+    if not state.is_final:
+        substate_code += f"{indent_str}state {state.name}"      
 
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
