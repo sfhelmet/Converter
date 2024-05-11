@@ -30,9 +30,7 @@ def main():
     else:
         raise InvalidUsageError("\nUsage: python main.py [ -f ] arg1 arg2")
 
-    
-
-    input_language = input_file.split(".")[-1]
+    input_language = input_file.split(".")[-1].replace("\\", "/")
     output_language = output_file.split(".")[-1]
 
     states = None

@@ -126,10 +126,18 @@ def parse_prolog(legend: bool = False):
     for on_entry_action in on_entry_actions:
         state = on_entry_action["State"]
         action = on_entry_action["Action"]
-        action_type = get_params(action)[0]
-        param = bytes_to_string(get_params(action)[1])
-        # states[state].on_entry_actions.append(Action(type, param))
-        add_item(states, state, "on_entry_actions", Action(action_type, param))
+        if type(action) is list:
+            for a in action:
+                action_type = get_params(a)[0]
+                param = bytes_to_string(get_params(a)[1])
+                print(action_type, param)
+                add_item(states, state, "on_entry_actions", Action(action_type, param))
+                    
+        else:
+            action_type = get_params(action)[0]
+            param = bytes_to_string(get_params(action)[1])
+            # states[state].on_entry_actions.append(Action(type, param))
+            add_item(states, state, "on_entry_actions", Action(action_type, param))
         
     do_actions = get_do_action("State", "Proc")
     for do_action in do_actions:
@@ -154,7 +162,7 @@ def add_item(states, state, name, what):
     if state not in states:
         logger.warning(f"State {state} does not exists, ignoring {name}: {what}")
     else:
-        getattr(states[state], name).add(what)
+        getattr(states[state], name).append(what)
 
 def parse_event(transition_event: str, legend: bool) -> list[Event]:
     global event_counter, event_dict

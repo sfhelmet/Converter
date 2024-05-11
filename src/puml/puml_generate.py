@@ -84,7 +84,7 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
     on_exit_actions = state.on_exit_actions
     internal_transitions = state.internal_transitions
     if on_exit_actions or on_entry_actions or do_actions or internal_transitions:
-        substate_code += f'{indent_str}note "<<{STATE_BEHAVIOR}>>\\n'
+        substate_code += f'{indent_str}{state.name}: '
 
         if on_entry_actions:
             substate_code += f'Entry: {on_entry_actions[0].type} {on_entry_actions[0].parameter}'
@@ -107,7 +107,6 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
         if internal_transitions := state.internal_transitions:
             for internal_transition in internal_transitions:
                 substate_code += f"{NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition, legend)}\\n"
-        substate_code += f'" as N_{state.name} \n'
     
     if not state.is_final:
         substate_code += f"{indent_str}state {state.name}"      
@@ -129,10 +128,6 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
             substate_code += indent_str + TAB + generate_transitions(transition, states, legend) + "\n"
 
         substate_code += indent_str + "}\n"
-
-    if on_exit_actions or do_actions or on_entry_actions or internal_transitions:
-        substate_code += indent_str + "\n"
-        substate_code += f"{indent_str}N_{state.name} --> {state.name}\n"
 
     substate_code += "\n"
     return substate_code
