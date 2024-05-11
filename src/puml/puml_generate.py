@@ -63,7 +63,7 @@ def generate_transitions(transition, states, legend: bool):
     plantuml_code = ""
     dest = transition.destination
     src = transition.source
-    if states.get(transition.destination, State('dummy')).is_final:
+    if states.get(dest, State('dummy')).is_final:
         dest = FINAL_STATE
     elif transition.source.startswith("__INIT"):
         src = INITIAL_STATE

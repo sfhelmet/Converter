@@ -117,10 +117,16 @@ def parse_prolog(legend: bool = False):
     for on_exit_action in on_exit_actions:
         state = on_exit_action["State"]
         action = on_exit_action["Action"]
-        action_type = get_params(action)[0]
-        param = bytes_to_string(get_params(action)[1])
-        # states[state].on_exit_actions.append(Action(type, param))
-        add_item(states, state, "on_exit_actions", Action(action_type, param))
+        if type(action) is list:
+            for a in action:
+                action_type = get_params(action)[0]
+                param = bytes_to_string(get_params(action)[1])
+                add_item(states, state, "on_exit_actions", Action(action_type, param))
+        else:
+            action_type = get_params(action)[0]
+            param = bytes_to_string(get_params(action)[1])
+            # states[state].on_exit_actions.append(Action(type, param))
+            add_item(states, state, "on_exit_actions", Action(action_type, param))
 
     on_entry_actions = get_onentry_action("State", "Action")
     for on_entry_action in on_entry_actions:
@@ -130,7 +136,6 @@ def parse_prolog(legend: bool = False):
             for a in action:
                 action_type = get_params(a)[0]
                 param = bytes_to_string(get_params(a)[1])
-                print(action_type, param)
                 add_item(states, state, "on_entry_actions", Action(action_type, param))
                     
         else:
