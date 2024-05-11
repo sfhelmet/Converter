@@ -5,3 +5,6 @@ class Action:
 
     def __str__(self) -> str:
         return self.parameter
+    
+    def __hash(self) -> int:
+        return hash(f"{self.type} {self.parameter}")

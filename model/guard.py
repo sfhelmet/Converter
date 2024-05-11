@@ -4,3 +4,6 @@ class Guard:
 
     def __str__(self) -> str:
         return self.condition
+    
+    def __hash(self) -> int:
+        return hash(self.condition)
