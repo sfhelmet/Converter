@@ -8,7 +8,7 @@ from model.state import State
 from model.transition import Transition
 from puml.puml_constants import *
 
-def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
+def generate_plantuml(states: dict[str: State], transitions: set[Transition], event_dict, guard_dict, action_dict, legend: bool = False) -> str:
     plantuml_code = f"{START_PUML}\n\n"
     # Generate States
     for state in states:
@@ -16,7 +16,7 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
             continue
 
         elif states[state].entries or states[state].exits or states[state].substates:
-            plantuml_code += generate_substates(states[state], states)
+            plantuml_code += generate_substates(states[state], states, legend)
 
         else:
             plantuml_code += f"state {states[state].name}" if not states[state].is_final else ""
@@ -27,19 +27,39 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition]):
                 plantuml_code += ":"
                 for internal_transition in internal_transitions:
                     
-                    plantuml_code += f" {NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition)}\\n"
+                    plantuml_code += f" {NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition, legend)}\\n"
 
             plantuml_code += "\n"
 
 
     # Generate Transitions
     for transition in transitions:
-        plantuml_code += generate_transitions(transition, states)
+        plantuml_code += generate_transitions(transition, states, legend)
         plantuml_code += "\n"
+
+    if legend:
+        plantuml_code += f'{LEGEND} "Event Legend\\n'
+        for event in event_dict:
+            plantuml_code += f'{event_dict[event]} : {event.type} {event.parameter}\\n'
+
+        plantuml_code += f'" as event_legend\n'
+
+        plantuml_code += f'{LEGEND} "Guard Legend\\n'
+        for guard in guard_dict:
+            plantuml_code += f'{guard_dict[guard]} : {guard.condition}\\n'
+
+        plantuml_code += f'" as guard_legend\n'
+
+        plantuml_code += f'{LEGEND} "Action Legend\\n'
+        for action in action_dict:
+            plantuml_code += f'{action_dict[action]} : {action.type} {action.parameter}\\n'
+
+        plantuml_code += f'" as action_legend\n'
+
     plantuml_code += f"\n{END_PUML}\n"
     return plantuml_code
 
-def generate_transitions(transition, states):
+def generate_transitions(transition, states, legend: bool):
     plantuml_code = ""
     dest = transition.destination
     src = transition.source
@@ -50,12 +70,12 @@ def generate_transitions(transition, states):
     plantuml_code += f"{src} {ARROW_TYPE} {dest}"  
 
     if transition.events or transition.guards or transition.actions:
-        plantuml_code += f" : {generate_ega(transition)}"
+        plantuml_code += f" : {generate_ega(transition, legend)}"
         
     return plantuml_code
                 
 
-def generate_substates(state: State, states: dict[str:State], indent =  0) -> str:
+def generate_substates(state: State, states: dict[str:State], legend: bool, indent =  0) -> str:
     TAB = "\t"
     indent_str = TAB * indent
     substate_code = ""
@@ -67,26 +87,26 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
         substate_code += f'{indent_str}note "<<{STATE_BEHAVIOR}>>\\n'
 
         if on_entry_actions:
-            substate_code += f'On Entry: {on_entry_actions[0].type} {on_entry_actions[0].parameter}'
+            substate_code += f'Entry: {on_entry_actions[0].type} {on_entry_actions[0].parameter}'
             for i in range(1, len(on_entry_actions)):
                 substate_code += f'; {on_entry_actions[i].type} {on_entry_actions[i].parameter}'
             substate_code += '\\n'
 
         if do_actions:
-            substate_code += f'Do Action: {do_actions[0].procedure}'
+            substate_code += f'Do: {do_actions[0].procedure}'
             for i in range(1, len(do_actions)):
                 substate_code += f'; {do_actions[i].procedure}'
             substate_code += '\\n'
 
         if on_exit_actions:
-            substate_code += f'On Exit: {on_exit_actions[0].type} {on_exit_actions[0].parameter}'
+            substate_code += f'Exit: {on_exit_actions[0].type} {on_exit_actions[0].parameter}'
             for i in range(1, len(on_exit_actions)):
                 substate_code += f'; {on_exit_actions[i].type} {on_exit_actions[i].parameter}'
             substate_code += '\\n'
 
         if internal_transitions := state.internal_transitions:
             for internal_transition in internal_transitions:
-                substate_code += f"{NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition)}\\n"
+                substate_code += f"{NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition, legend)}\\n"
         substate_code += f'" as N_{state.name} \n'
     
     if not state.is_final:
@@ -103,10 +123,10 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
             substate_code += f"{indent_str}{TAB}state {exit} <<{EXIT_STEREOTYPE}>>\n"
         
         for child in state.substates:
-            substate_code += generate_substates(states[child], states, indent + 1)
+            substate_code += generate_substates(states[child], states, legend, indent + 1)
 
         for transition in state.transitions:
-            substate_code += indent_str + TAB + generate_transitions(transition, states) + "\n"
+            substate_code += indent_str + TAB + generate_transitions(transition, states, legend) + "\n"
 
         substate_code += indent_str + "}\n"
 
@@ -117,20 +137,20 @@ def generate_substates(state: State, states: dict[str:State], indent =  0) -> st
     substate_code += "\n"
     return substate_code
 
-def generate_ega(transition):
+def generate_ega(transition, legend) -> str:
     subcode = ""
     if transition.events:
-        subcode += generate_events(transition.events)
+        subcode += generate_events(transition.events, legend)
 
     if transition.guards:
-        subcode += f" [{generate_guards(transition.guards)}]"
+        subcode += f" [{generate_guards(transition.guards, legend)}]"
 
     if transition.actions:
-        subcode += generate_action(transition.actions)
+        subcode += generate_action(transition.actions, legend)
 
     return subcode
 
-def generate_events(events) -> str:
+def generate_events(events, legend) -> str:
     event_str = ""
     for i in range(len(events)):
         event = events[i]
@@ -138,30 +158,39 @@ def generate_events(events) -> str:
         if i != 0:
             event_str += " ;"
 
-        if event.type == "call":
+        if legend:
+            event_str += event.key
+        elif event.type == "call":
             event_str += f" {event.parameter}"
         else:
             event_str += f" {event.type} {event.parameter}"
 
     return event_str
 
-def generate_guards(guards) -> str:
+def generate_guards(guards, legend) -> str:
     guard_str = ""
     for i in range(len(guards)):
         guard = guards[i]
 
         if i != 0:
             guard_str += "; "
-        guard_str += f"{guard.condition}"
+        
+        if legend:
+            guard_str += guard.key
+        else:
+            guard_str += f"{guard.condition}"
 
     return guard_str
 
-def generate_action(actions) -> str:
+def generate_action(actions, legend) -> str:
     action_str = " /"
     for i in range(len(actions)):
         action = actions[i]
         if i != 0:
             action_str += "; "
-
-        action_str += f"{action.type} {action.parameter}"
+        
+        if legend:
+            action_str += action.key
+        else:
+            action_str += f"{action.type} {action.parameter}"
     return action_str

@@ -15,16 +15,22 @@ def main():
     flags = None
     input_file = None # "./resources/PUML/output.puml"
     output_file = None # "./resources/db/output.pl"
-
+    legend = False
     if sys.argv[1].startswith('-') and len(sys.argv) == 4:
-        flags = sys.argv[1]
+        flag_str = sys.argv[1]
         input_file = sys.argv[2]
         output_file = sys.argv[3]
+
+        flags = set(flag_str.replace("-", ""))
+        if 'l' in flags:
+            legend = True
     elif len(sys.argv) == 3:
         input_file = sys.argv[1]
         output_file = sys.argv[2]
     else:
         raise InvalidUsageError("\nUsage: python main.py [ -f ] arg1 arg2")
+
+    
 
     input_language = input_file.split(".")[-1]
     output_language = output_file.split(".")[-1]
@@ -32,11 +38,13 @@ def main():
     states = None
     transitions = None
     sub_code = None
+    event_dict = None
+    guard_dict = None
+    action_dict = None
 
     if input_language == "pl":
         file_load(input_file) # Load prolog file
-        states, transitions = parse_prolog()
-
+        states, transitions, event_dict, guard_dict, action_dict = parse_prolog(legend)
     elif input_language == "puml":
         states, transitions = parse_plantuml(input_file)
 
@@ -47,7 +55,7 @@ def main():
         sub_code = generate_prolog(states, transitions)
 
     elif output_language == "puml":
-        sub_code = generate_plantuml(states, transitions)
+        sub_code = generate_plantuml(states, transitions, event_dict, guard_dict, action_dict, legend)
         
     else:
         raise NotSupportedError("Output file type not supported")

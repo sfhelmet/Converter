@@ -16,8 +16,14 @@ from src.util.parse import get_params
 
 from src.logger_config import logger
 
-def parse_prolog():
-    
+event_counter = 1
+guard_counter = 1
+action_counter = 1
+action_dict = {}
+guard_dict = {}
+event_dict = {}
+def parse_prolog(legend: bool = False):
+    global event_counter, event_dict, guard_counter, action_counter, guard_dict, action_dict
     logger.debug("Reading Prolog File")
     states = {}
     states_list = get_state("Name")
@@ -57,9 +63,9 @@ def parse_prolog():
     for transition in transitions_list:
         src = transition["X"]
         dest = transition["Y"]
-        event = parse_event(transition["E"])
-        guard = parse_guard(transition["G"])
-        action = parse_action(transition["A"])
+        event = parse_event(transition["E"], legend)
+        guard = parse_guard(transition["G"], legend)
+        action = parse_action(transition["A"], legend)
         
         if src not in states or dest not in states:
             continue
@@ -129,22 +135,20 @@ def parse_prolog():
     for do_action in do_actions:
         state = do_action["State"]
         procedure = do_action["Proc"]
-        # states[state].do_actions.append(Proc(bytes_to_string(get_params(procedure)[0])))
         add_item(states, state, "do_actions", Proc(bytes_to_string(get_params(procedure)[0])))
 
     internal_trasitions = get_internal_transition("State", "Event", "Guard", "Action")
     for internal_transition in internal_trasitions:
         state = internal_transition["State"]
-        event = parse_event(internal_transition["Event"])
-        guard = parse_guard(internal_transition["Guard"])
-        action = parse_action(internal_transition["Action"])
+        event = parse_event(internal_transition["Event"], legend)
+        guard = parse_guard(internal_transition["Guard"], legend)
+        action = parse_action(internal_transition["Action"], legend)
         
         transition = Transition(state, state, event, guard, action)
-        # states[state].internal_transitions.add(transition)
         add_item(states, state, "internal_transitions", transition)
 
     logger.debug("End of Reading Prolog File")
-    return states, transitions  
+    return states, transitions, event_dict, guard_dict, action_dict
 
 def add_item(states, state, name, what):
     if state not in states:
@@ -152,19 +156,28 @@ def add_item(states, state, name, what):
     else:
         getattr(states[state], name).add(what)
 
-def parse_event(transition_event) -> list[Event]:
+def parse_event(transition_event: str, legend: bool) -> list[Event]:
+    global event_counter, event_dict
     if transition_event == NIL:
-        event = []
+        return []
 
     else:
         event_params = get_params(transition_event)
         event_type = event_params[0].strip()
         event_parameter = bytes_to_string(event_params[1])
-        event = [Event(event_type, event_parameter)]
+        event = Event(event_type, event_parameter)
+        if legend:
+            if event not in event_dict:
+                event_dict[event] = f"e{event_counter}"
+                event.key = f"e{event_counter}"
+                event_counter += 1
+            else:
+                event.key = event_dict[event]
     
-    return event
+    return [event]
 
-def parse_guard(transition_guard) -> list[Guard]:
+def parse_guard(transition_guard, legend) -> list[Guard]:
+    global guard_counter, guard_dict
     if transition_guard == NIL:
         guards_list = []
     
@@ -174,27 +187,52 @@ def parse_guard(transition_guard) -> list[Guard]:
         guards_list = []
         for guard in guards:
             guard_condition = guard.strip()
-            guards_list.append(Guard(guard_condition))
+            guard = Guard(guard_condition)
+            if legend:
+                if guard not in guard_dict:
+                    guard_dict[guard] = f"g{guard_counter}"
+                    guard.key = f"g{guard_counter}"
+                    guard_counter += 1
+                else:
+                    guard.key = guard_dict[guard]
+            guards_list.append(guard)
     return guards_list
 
-def parse_action(transition_action) -> list[Action]:
+def parse_action(transition_action, legend) -> list[Action]:
+    global action_counter, action_dict
     actions_list = []
 
     if transition_action == NIL:
         return actions_list
 
     if type(transition_action) is list:
-        for action in transition_action:
-            actions_params = get_params(action)
+        for action_str in transition_action:
+            actions_params = get_params(action_str)
             action_type = actions_params[0].strip()
             action_parameter = bytes_to_string(actions_params[1])
-            actions_list.append(Action(action_type, action_parameter))
+            action = Action(action_type, action_parameter)
+            if legend:
+                if action not in action_dict:
+                    action_dict[action] = f"a{action_counter}"
+                    action.key = f"a{action_counter}"
+                    action_counter += 1
+                else:
+                    action.key = action_dict[action]
+            actions_list.append(action)
                     
     else:
         actions_params = get_params(transition_action)
         action_type = actions_params[0].strip()
         action_parameter = bytes_to_string(actions_params[1])
-        actions_list.append(Action(action_type, action_parameter))
+        if legend:
+            action = Action(action_type, action_parameter)
+            if action not in action_dict:
+                action_dict[action] = f"a{action_counter}"
+                action.key = f"a{action_counter}"
+                action_counter += 1
+            else:
+                action.key = action_dict[action]
+        actions_list.append(action)
 
     return actions_list
 
