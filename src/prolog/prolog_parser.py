@@ -237,8 +237,8 @@ def parse_action(transition_action, legend) -> list[Action]:
         actions_params = get_params(transition_action)
         action_type = actions_params[0].strip()
         action_parameter = bytes_to_string(actions_params[1])
+        action = Action(action_type, action_parameter)
         if legend:
-            action = Action(action_type, action_parameter)
             if action not in action_dict:
                 action_dict[action] = f"a{action_counter}"
                 action.key = f"a{action_counter}"

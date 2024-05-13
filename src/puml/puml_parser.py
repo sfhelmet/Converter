@@ -50,7 +50,7 @@ def parse_plantuml(puml_file):
                     region_stack.pop()
                     continue
 
-                elif line.startswith('state '):
+                elif line.startswith(f'{STATE_STRING} '):
                     state_name = line.split()[1].lower() if line.split()[1][-1] != ":" else line.split()[1][:-1].lower()
 
                     # "state" can be a state name
