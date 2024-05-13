@@ -6,5 +6,8 @@ class Action:
     def __str__(self) -> str:
         return self.parameter
     
-    def __hash(self) -> int:
+    def __hash__(self) -> int:
         return hash(f"{self.type} {self.parameter}")
+    
+    def __repr__(self) -> str:
+        return f"Action({self.type}, {self.parameter})"

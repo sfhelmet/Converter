@@ -5,5 +5,9 @@ class Guard:
     def __str__(self) -> str:
         return self.condition
     
-    def __hash(self) -> int:
+    def __hash__(self) -> int:
         return hash(self.condition)
+    
+    def __repr__(self) -> str:
+        return f"Guard({self.condition})"
+    

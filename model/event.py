@@ -9,3 +9,6 @@ class Event:
     
     def __hash__(self) -> int:
         return hash(self.type + self.parameter)
+
+    def __repr__(self) -> str:
+        return f"Event({self.type}, {self.parameter})"
