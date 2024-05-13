@@ -261,6 +261,8 @@ def __parse_ega(ega: str) -> tuple[Event, Guard, Action]:
 
     events = []
     for event_str in events_str:
+        if event_str == EPSILON:
+            continue
         if event_str.split()[0] not in EVENT_TYPES:
             events.append(Event("call", event_str.strip()))
 
