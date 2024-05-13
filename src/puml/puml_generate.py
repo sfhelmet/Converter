@@ -69,8 +69,7 @@ def generate_transitions(transition, states, legend: bool):
         src = INITIAL_STATE
     plantuml_code += f"{src} {ARROW_TYPE} {dest}"  
 
-    if transition.events or transition.guards or transition.actions:
-        plantuml_code += f" : {generate_ega(transition, legend)}"
+    plantuml_code += f" : {generate_ega(transition, legend)}"
         
     return plantuml_code
                 
@@ -134,8 +133,7 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
 
 def generate_ega(transition, legend) -> str:
     subcode = ""
-    if transition.events:
-        subcode += generate_events(transition.events, legend)
+    subcode += generate_events(transition.events, legend)
 
     if transition.guards:
         subcode += f" [{generate_guards(transition.guards, legend)}]"
@@ -146,6 +144,8 @@ def generate_ega(transition, legend) -> str:
     return subcode
 
 def generate_events(events, legend) -> str:
+    if len(events) == 0:
+        return EPSILON
     event_str = ""
     for i in range(len(events)):
         event = events[i]
