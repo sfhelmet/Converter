@@ -1,4 +1,5 @@
 from enum import Enum
+STATE_STRING = "state"
 INITIAL_STATE = "[*]"
 FINAL_STATE = "[*]"
 ENTRY_STEREOTYPE = "entryPoint"
@@ -6,7 +7,6 @@ EXIT_STEREOTYPE = "exitPoint"
 CHOICE_STEREOTYPE = "choice"
 JUNCTION_STEREOTYPE = "start"
 ARROW_TYPE = "-->"
-STATE_BEHAVIOR = "State Behavior"
 
 START_PUML = "@startuml"
 END_PUML = "@enduml"
@@ -37,3 +37,4 @@ NOTE_TYPES = {NoteType.ON_ENTRY, NoteType.DO_ACTION, NoteType.ON_EXIT}
 REGION_SEPERATOR_VERTICAL = "||"
 REGION_SEPERATOR_HORIZONTAL = "--"
 LEGEND = "note"
+EPSILON = 'ε'

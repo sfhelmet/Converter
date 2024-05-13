@@ -19,7 +19,7 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition], ev
             plantuml_code += generate_substates(states[state], states, legend)
 
         else:
-            plantuml_code += f"state {states[state].name}" if not states[state].is_final else ""
+            plantuml_code += f"{STATE_STRING} {states[state].name}" if not states[state].is_final else ""
             if states[state].choice:
                 plantuml_code += f" <<{CHOICE_STEREOTYPE}>>"
             
@@ -109,7 +109,7 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
                 substate_code += f"{NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition, legend)}\\n"
     
     if not state.is_final:
-        substate_code += f"{indent_str}state {state.name}"      
+        substate_code += f"{indent_str}{STATE_STRING} {state.name}"      
 
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
@@ -117,9 +117,9 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
     if state.entries or state.exits or state.substates:
         substate_code += " {\n"
         for entry in state.entries:
-            substate_code += f"{indent_str}{TAB}state {entry} <<{ENTRY_STEREOTYPE}>>\n"
+            substate_code += f"{indent_str}{TAB}{STATE_STRING} {entry} <<{ENTRY_STEREOTYPE}>>\n"
         for exit in state.exits:
-            substate_code += f"{indent_str}{TAB}state {exit} <<{EXIT_STEREOTYPE}>>\n"
+            substate_code += f"{indent_str}{TAB}{STATE_STRING} {exit} <<{EXIT_STEREOTYPE}>>\n"
         
         for child in state.substates:
             substate_code += generate_substates(states[child], states, legend, indent + 1)
