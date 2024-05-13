@@ -87,19 +87,19 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
         substate_code += f'{indent_str}{state.name}: '
 
         if on_entry_actions:
-            substate_code += f'Entry: {on_entry_actions[0].type} {on_entry_actions[0].parameter}'
+            substate_code += f'{NoteType.ON_ENTRY.value}: {on_entry_actions[0].type} {on_entry_actions[0].parameter}'
             for i in range(1, len(on_entry_actions)):
                 substate_code += f'; {on_entry_actions[i].type} {on_entry_actions[i].parameter}'
             substate_code += '\\n'
 
         if do_actions:
-            substate_code += f'Do: {do_actions[0].procedure}'
+            substate_code += f'{NoteType.DO_ACTION.value}: {do_actions[0].procedure}'
             for i in range(1, len(do_actions)):
                 substate_code += f'; {do_actions[i].procedure}'
             substate_code += '\\n'
 
         if on_exit_actions:
-            substate_code += f'Exit: {on_exit_actions[0].type} {on_exit_actions[0].parameter}'
+            substate_code += f'{NoteType.ON_EXIT.value}: {on_exit_actions[0].type} {on_exit_actions[0].parameter}'
             for i in range(1, len(on_exit_actions)):
                 substate_code += f'; {on_exit_actions[i].type} {on_exit_actions[i].parameter}'
             substate_code += '\\n'
