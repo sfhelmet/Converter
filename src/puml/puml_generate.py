@@ -6,9 +6,11 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
+from model.ega_dict import EgaDict
 from puml.puml_constants import *
 
-def generate_plantuml(states: dict[str: State], transitions: set[Transition], event_dict, guard_dict, action_dict, legend: bool = False) -> str:
+def generate_plantuml(states: dict[str: State], transitions: set[Transition], ega_dict, legend: bool = False) -> str:
+    event_dict, guard_dict, action_dict = ega_dict.get_dicts()
     plantuml_code = f"{START_PUML}\n\n"
     # Generate States
     for state in states:

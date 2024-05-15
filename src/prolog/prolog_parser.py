@@ -10,6 +10,7 @@ from model.event import Event
 from model.guard import Guard
 from model.action import Action
 from model.proc import Proc
+from model.ega_dict import EgaDict
 from prolog.query import *
 from prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
 from src.util.parse import get_params
@@ -161,7 +162,8 @@ def parse_prolog(legend: bool = False):
         add_item(states, state, "internal_transitions", transition)
 
     logger.debug("End of Reading Prolog File")
-    return states, transitions, event_dict, guard_dict, action_dict
+
+    return states, transitions, EgaDict(event_dict, guard_dict, action_dict)
 
 def add_item(states, state, name, what):
     if state not in states:

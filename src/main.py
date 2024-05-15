@@ -36,13 +36,11 @@ def main():
     states = None
     transitions = None
     sub_code = None
-    event_dict = None
-    guard_dict = None
-    action_dict = None
+    ega_dict = None
 
     if input_language == "pl":
         file_load(input_file) # Load prolog file
-        states, transitions, event_dict, guard_dict, action_dict = parse_prolog(legend)
+        states, transitions, ega_dict = parse_prolog(legend)
     elif input_language == "puml":
         states, transitions = parse_plantuml(input_file)
 
@@ -53,7 +51,7 @@ def main():
         sub_code = generate_prolog(states, transitions)
 
     elif output_language == "puml":
-        sub_code = generate_plantuml(states, transitions, event_dict, guard_dict, action_dict, legend)
+        sub_code = generate_plantuml(states, transitions, ega_dict, legend)
         
     else:
         raise NotSupportedError("Output file type not supported")
