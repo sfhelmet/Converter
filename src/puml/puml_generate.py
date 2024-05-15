@@ -108,7 +108,8 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
         if internal_transitions := state.internal_transitions:
             for internal_transition in internal_transitions:
                 substate_code += f"{NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition, legend)}\\n"
-    
+
+        substate_code += '\n'
     if not state.is_final:
         substate_code += f"{indent_str}{STATE_STRING} {state.name}"      
 
