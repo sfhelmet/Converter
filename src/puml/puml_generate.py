@@ -24,6 +24,9 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition], eg
             plantuml_code += f"{STATE_STRING} {states[state].name}" if not states[state].is_final else ""
             if states[state].choice:
                 plantuml_code += f" <<{CHOICE_STEREOTYPE}>>"
+
+            elif states[state].junction:
+                plantuml_code += f" <<{JUNCTION_STEREOTYPE}>>"
             
             elif internal_transitions := states[state].internal_transitions:
                 plantuml_code += ":"
@@ -112,9 +115,12 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
         substate_code += '\n'
     if not state.is_final:
         substate_code += f"{indent_str}{STATE_STRING} {state.name}"      
-
+    # print(state)
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
+
+    elif state.junction == True:
+        substate_code += f"<<{JUNCTION_STEREOTYPE}>>"
 
     if state.entries or state.exits or state.substates:
         substate_code += " {\n"

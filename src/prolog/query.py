@@ -39,6 +39,12 @@ def get_initial(var_name):
 def get_final(var_name):
   return __query_relation("final", var_name)
 
+def get_choice(var_name):
+  return __query_relation("choice", var_name)
+
+def get_junction(var_name):
+  return __query_relation("junction", var_name)
+
 def get_entry_pseudostate(entry, substate):
   return __query_relation("entry_pseudostate", entry, substate)
 

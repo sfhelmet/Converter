@@ -27,10 +27,20 @@ def parse_prolog(legend: bool = False):
     global event_counter, event_dict, guard_counter, action_counter, guard_dict, action_dict
     logger.debug("Reading Prolog File")
     states = {}
-    states_list = get_state("Name")
+    states_list = [x["Name"] for x in get_state("Name")]
+    choices_list = [x["Name"] for x in get_choice("Name")]
+    junctions_list = [x["Name"] for x in get_junction("Name")]
 
     for state in states_list:
-        states[state["Name"]] = (State(state["Name"]))
+        states[state] = (State(state))
+
+    for choice in choices_list:
+        states[choice] = (State(choice))
+        states[choice].choice = True
+
+    for junction in junctions_list: 
+        states[junction] = (State(junction))
+        states[junction].junction = True
 
     transitions = set()
     transitions_list = get_transition("X", "Y", "E", "G", "A")
@@ -50,8 +60,8 @@ def parse_prolog(legend: bool = False):
     for pair in superstate_pairs:
         sup = pair["Superstate"]
         sub = pair["Substate"]
-
-        states[sub] = State(sub)
+        if sub not in states:
+            states[sub] = State(sub)
         if sup in regions:
             states[sub].region = sup
         else:
@@ -87,22 +97,25 @@ def parse_prolog(legend: bool = False):
     for final_state in final_states:
         states[final_state["X"]].is_final = True
 
-    initial_states = get_initial("X")
+    initial_states = [x["X"] for x in get_initial("X")]
     i = 1
     for initial_state in initial_states:
-        states[initial_state["X"]].is_initial = True
-        superstate = get_substate("Sup", initial_state["X"])
-        if len(superstate) == 0:
-            transitions.add(Transition(f"__INIT{i}", initial_state["X"]))
+        states[initial_state].is_initial = True
+        superstates = [x["Sup"] for x in get_substate("Sup", initial_state)]
+        if len(superstates) == 0:
+            transitions.add(Transition(f"__INIT{i}", initial_state))
         else:
-            states[superstate[0]['Sup']].transitions.add(Transition(f"__INIT{i}_{superstate[0]['Sup']}", initial_state["X"]))
+            if superstates[0] not in states:
+                continue
+            states[superstates[0]].transitions.add(Transition(f"__INIT{i}_{superstates[0]}", initial_state))
         i += 1
 
     entries = get_entry_pseudostate("Entry", "Substate")
     for entry in entries:
         sub = entry["Substate"]
+        if sub in regions:
+            continue
         entry_state = entry["Entry"]
-
         states[states[sub].superstate].entries.add(entry_state)
         transitions.add(Transition(entry_state, sub))
         
@@ -162,7 +175,6 @@ def parse_prolog(legend: bool = False):
         add_item(states, state, "internal_transitions", transition)
 
     logger.debug("End of Reading Prolog File")
-
     return states, transitions, EgaDict(event_dict, guard_dict, action_dict)
 
 def add_item(states, state, name, what):

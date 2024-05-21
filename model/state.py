@@ -18,3 +18,6 @@ class State:
         self.internal_transitions = set()
         self.region: str = "1"
         self.region_count: int = 1
+
+    def __repr__(self) -> str:
+        return f"State({self.name})"
