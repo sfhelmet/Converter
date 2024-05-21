@@ -39,7 +39,7 @@ state ON {
                 state j3 <<start>>
                 state c2 <<choice>>
                 state READING_IDLE: Entry: Read temperature-humidity
-                state PROCESSING: Enter: Read temperature-humidity\nExit: switch orange-red led OFF
+                state PROCESSING: Entry: Read temperature-humidity\nExit: switch orange-red led OFF
 
                 [*] --> READING_IDLE
                 READING_IDLE -> j2
@@ -57,7 +57,6 @@ state ON {
             READING -> EMERGENCY : when\n(tCurrent >= T_Threshold\nOR\nhcurrent >= H_Threshold)
             EMERGENCY -l-> READING : reset
         }
-        CONFIGURING_exit --> error
         ACTIVE_SKIP_CONFIGURING --> MONITORING_SKIP_CONFIGURING
         CONFIGURING --> error: when [inactivity > 2m]/ beep
         error -u-> CONFIGURING: reset

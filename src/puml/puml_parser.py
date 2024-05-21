@@ -87,29 +87,31 @@ def __parse_state_behavior(line: str, state_name: str):
     on_entry_index = line.find(NoteType.ON_ENTRY.value)
     do_action_index = line.find(NoteType.DO_ACTION.value)
     on_exit_index = line.find(NoteType.ON_EXIT.value)
-
     fix = lambda x: x if x != -1 else len(line)
+    entry_actions, do_actions, exit_actions = [], [], []
 
     # ON ENTRY
-    on_entry_string = line[on_entry_index:]
-    start = on_entry_string.find(":")
-    end = fix(on_entry_string.find("\\n"))
+    if on_entry_index != -1:
+        on_entry_string = line[on_entry_index:]
+        start = on_entry_string.find(":")
+        end = fix(on_entry_string.find("\\n"))
 
-    _, _, entry_actions = __parse_ega("/" + on_entry_string[start + 1:end].strip())
+        _, _, entry_actions = __parse_ega("/" + on_entry_string[start + 1:end].strip())
 
     # DO ACTION
-    do_action_string = line[do_action_index:]
-    start = do_action_string.find(":")
-    end = fix(do_action_string.find("\\n"))
-
-    _, _, do_actions = __parse_ega("/" + do_action_string[start + 1:end].strip())
+    if do_action_index != -1:
+        do_action_string = line[do_action_index:]
+        start = do_action_string.find(":")
+        end = fix(do_action_string.find("\\n"))
+        _, _, do_actions = __parse_ega("/" + do_action_string[start + 1:end].strip())
 
     # ON EXIT
-    on_exit_string = line[on_exit_index:]
-    start = on_exit_string.find(":")
-    end = fix(on_exit_string.find("\\n"))
+    if on_exit_index != -1:
+        on_exit_string = line[on_exit_index:]
+        start = on_exit_string.find(":")
+        end = fix(on_exit_string.find("\\n"))
 
-    _, _, exit_actions = __parse_ega("/" + on_exit_string[start + 1:end])
+        _, _, exit_actions = __parse_ega("/" + on_exit_string[start + 1:end])
 
     # INTERNAL TRANSITIONS
     internal_transitions_index = line.find(NoteType.INTERNAL_TRANSITION.value)
