@@ -63,9 +63,18 @@ def parse_prolog(legend: bool = False):
         if sub not in states:
             states[sub] = State(sub)
         if sup in regions:
-            states[sub].region = sup
+            states[sub].region = sup[-1]
+            superstate_name = sup.split('_')[0]
+            states[sub].superstate = superstate_name
+            if superstate_name not in states:
+                states[superstate_name] = State(superstate_name)
+            states_set = states[superstate_name].substates.get(sup[-1], set([sub]))
+            states_set.add(sub)
+            states[superstate_name].substates[sup[-1]] = states_set
         else:
-            states[sup].substates.add(sub)
+            states_set = states[sup].substates.get("1", set([sub]))
+            states_set.add(sub)
+            states[sup].substates["1"] = states_set
             states[sub].superstate = sup
 
     for region_name in region_count:

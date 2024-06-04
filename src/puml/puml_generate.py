@@ -16,7 +16,7 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition], eg
     for state in states:
         if states[state].superstate:
             continue
-
+        
         elif states[state].entries or states[state].exits or states[state].substates:
             plantuml_code += generate_substates(states[state], states, legend)
 
@@ -115,22 +115,25 @@ def generate_substates(state: State, states: dict[str:State], legend: bool, inde
         substate_code += '\n'
     if not state.is_final:
         substate_code += f"{indent_str}{STATE_STRING} {state.name}"      
-    # print(state)
     if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
 
     elif state.junction == True:
         substate_code += f"<<{JUNCTION_STEREOTYPE}>>"
-
-    if state.entries or state.exits or state.substates:
+    
+    if state.entries or state.exits or state.substates or state.region_count > 1:
         substate_code += " {\n"
-        for entry in state.entries:
-            substate_code += f"{indent_str}{TAB}{STATE_STRING} {entry} <<{ENTRY_STEREOTYPE}>>\n"
-        for exit in state.exits:
-            substate_code += f"{indent_str}{TAB}{STATE_STRING} {exit} <<{EXIT_STEREOTYPE}>>\n"
-        
-        for child in state.substates:
-            substate_code += generate_substates(states[child], states, legend, indent + 1)
+
+        if state.region_count <= 1:
+            for entry in state.entries:
+                substate_code += f"{indent_str}{TAB}{STATE_STRING} {entry} <<{ENTRY_STEREOTYPE}>>\n"
+            for exit in state.exits:
+                substate_code += f"{indent_str}{TAB}{STATE_STRING} {exit} <<{EXIT_STEREOTYPE}>>\n"
+        for i, region in enumerate(state.substates):
+            for child in state.substates[region]:
+                substate_code += generate_substates(states[child], states, legend, indent + 1)
+            if i != len(state.substates) - 1:
+                substate_code += f"{indent_str}{TAB}{REGION_SEPERATOR_VERTICAL}\n"
 
         for transition in state.transitions:
             substate_code += indent_str + TAB + generate_transitions(transition, states, legend) + "\n"
