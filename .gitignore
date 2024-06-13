@@ -7,3 +7,4 @@ Pipfile.lock
 *.iml
 settings.json
 *.log
+resources/Mermaid/*
