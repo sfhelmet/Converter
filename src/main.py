@@ -3,6 +3,8 @@ from puml.puml_parser import parse_plantuml
 from puml.puml_generate import generate_plantuml
 from prolog.prolog_parser import parse_prolog
 from prolog.prolog_generate import generate_prolog
+from mermaid.md_parser import parse_mermaid
+from mermaid.md_generate import generate_mermaid
 from exceptions import InvalidUsageError, NotSupportedError
 
 from logger_config import logger
@@ -43,6 +45,8 @@ def main():
         states, transitions, ega_dict = parse_prolog(legend)
     elif input_language == "puml":
         states, transitions = parse_plantuml(input_file)
+    elif input_language == "md":
+        states, transitions = parse_mermaid(input_file)
 
     else:
         raise NotSupportedError("Input file type not supported")
@@ -52,6 +56,9 @@ def main():
 
     elif output_language == "puml":
         sub_code = generate_plantuml(states, transitions, ega_dict, legend)
+
+    elif output_language == "md":
+        sub_code = generate_mermaid(states, transitions, ega_dict, legend)
         
     else:
         raise NotSupportedError("Output file type not supported")
