@@ -1,14 +1,17 @@
 from typing import Optional, Set
+from model.region import Region
 from model.state import State
-from model.state_interface import StateInterface
 from model.transition import Transition
 
-class Region(StateInterface):
-    def __init__(self, name) -> None:
-        self._name: str = name
-        self._superstate: Optional[str] = None
+
+class CompositeState(State):
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+        self.entry_pseudostate: Optional[str] = None
+        self.exit_pseudostate: Optional[str] = None
         self.substates: Set[State] = set()
         self.transitions: Set[Transition] = set()
+        self.regions: Set[Region] = set()
 
     @property
     def name(self) -> str:
@@ -26,5 +29,8 @@ class Region(StateInterface):
     def superstate(self, value):
         self._superstate = value
 
+    def add_substate(self, substate: State) -> None:
+        self.substates.add(substate)
+
     def __repr__(self) -> str:
-        return f"Region({self.name})"
+        return f"CompositeState({self.name}, substates={self.substates})"

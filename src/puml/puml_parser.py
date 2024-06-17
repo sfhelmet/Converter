@@ -4,6 +4,7 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
+from model.pseudostate import Pseudostate, PseudostateType
 from model.state import State
 from model.transition import Transition
 from model.event import Event
@@ -126,7 +127,26 @@ def __parse_state_behavior(line: str, state_name: str):
     return entry_actions, do_actions, exit_actions, internal_transitions_set
 
 def __create_state(line: str, state_name: str, states: dict[str, State], instate_actions: dict[str, dict], superstate_stack: list[str], region_stack: list[int]) -> State:
-    new_state = State(state_name.lower())
+    new_state = None
+
+    left_stereotype = line.find("<<")
+    right_stereotype = line.find(">>")
+    stereotype = line[left_stereotype + 2:right_stereotype]
+    if stereotype == CHOICE_STEREOTYPE:
+        new_state = Pseudostate(state_name, PseudostateType.CHOICE)
+
+    elif stereotype == JUNCTION_STEREOTYPE:
+        new_state = Pseudostate(state_name, PseudostateType.JUNCTION)
+
+    elif stereotype == ENTRY_STEREOTYPE:
+        new_state = Pseudostate(state_name, PseudostateType.ENTRY)
+        
+    elif stereotype == EXIT_STEREOTYPE:
+        new_state = Pseudostate(state_name, PseudostateType.EXIT)
+
+    else:
+        new_state = State(state_name.lower())
+
     if state_name in instate_actions:
         state_behavior = instate_actions[state_name]
         new_state.on_entry_actions = state_behavior["on_entry"]
@@ -139,20 +159,7 @@ def __create_state(line: str, state_name: str, states: dict[str, State], instate
     new_state.region = str(region_stack[-1])
     __connect_superstate(new_state, superstate_stack, states)
     
-    left_stereotype = line.find("<<")
-    right_stereotype = line.find(">>")
-    stereotype = line[left_stereotype + 2:right_stereotype]
-    if stereotype == CHOICE_STEREOTYPE:
-        new_state.choice = True
-
-    if stereotype == JUNCTION_STEREOTYPE:
-        new_state.junction = True
-
-    if stereotype == ENTRY_STEREOTYPE:
-        new_state.entry = True
-        
-    if stereotype == EXIT_STEREOTYPE:
-        new_state.exit = True
+    
 
     if line.split()[-1] == "{":
         superstate_stack.append(state_name)
