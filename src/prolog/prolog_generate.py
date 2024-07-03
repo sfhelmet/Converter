@@ -4,7 +4,7 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from model.state import State
+from model.states import Pseudostate, PseudostateType, State
 from model.transition import Transition
 from model.action import Action
 from prolog.prolog_constants import *
@@ -15,43 +15,44 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
     final_states = []
     super_states = []
     regions = set()
-    choice = []
-    junction = []
-    entry_pseudostates = []
-    exit_pseudostates = []
+    choice_states = []
+    junction_states = []
+    entry_states = []
+    exit_states = []
     on_entry_actions_list = []
     do_actions_list = []
     on_exit_actions_list = []
     internal_transitions_list = []
     
     for state_name in states:
-        state = states[state_name]
-        if state.superstate or state.entry or state.exit or state.choice or state.junction:
-            if state.superstate:
-                super_states.append(state.name)
-            if state.entry:
-                entry_pseudostates.append(state.name)
-            if state.exit:
-                exit_pseudostates.append(state.name)
-        else:
-            prolog_code += f"{STATE_PREFIX}({state.name}).\n"
+        state_obj = states[state_name]
+        if type(state_obj) == Pseudostate or state_obj.superstate:
+            if state_obj.superstate:
+                super_states.append(state_name)
+            if state_obj.type == PseudostateType.ENTRY:
+                entry_states.append(state_name)
+            if state_obj.type == PseudostateType.EXIT:
+                exit_states.append(state_name)
+            if state_obj.type == PseudostateType.CHOICE:
+                choice_states.append(state_name)
+            if state_obj.type == PseudostateType.JUNCTION:
+                junction_states.append(state_name)
+            if state_obj.type == PseudostateType.INITIAL:
+                initial_states.append(state_name)
+            if state_obj.type == PseudostateType.FINAL:
+                final_states.append(state_name)
 
-        if state.is_initial:
-            initial_states.append(state.name)
-        if state.is_final:
-            final_states.append(state.name)
-        if state.choice:
-            choice.append(state.name)
-        if state.junction:
-            junction.append(state.name)
-        if state.on_entry_actions:
-            on_entry_actions_list.append(state.name)
-        if state.do_actions:
-            do_actions_list.append(state.name)
-        if state.on_exit_actions:
-            on_exit_actions_list.append(state.name)
-        if state.internal_transitions:
-            internal_transitions_list.append(state.name)
+        else:
+            prolog_code += f"{STATE_PREFIX}({state_name}).\n"
+
+            if state_obj.on_entry_actions:
+                on_entry_actions_list.append(state_name)
+            if state_obj.do_actions:
+                do_actions_list.append(state_name)
+            if state_obj.on_exit_actions:
+                on_exit_actions_list.append(state_name)
+            if state_obj.internal_transitions:
+                internal_transitions_list.append(state_name)
         
     for initial_state in initial_states:
         prolog_code += f"{INITIAL_PREFIX}({initial_state}).\n"
@@ -78,20 +79,20 @@ def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> st
         for i in range(1, int(states[region_state].region_count) + 1):
             prolog_code += f"{REGION_PREFIX}({region_state}, {region_state}_r{i}).\n"
 
-    for state in choice:
+    for state in choice_states:
         prolog_code += f"{CHOICE_STATE_PREFIX}({state}).\n"
 
-    for state in junction:
+    for state in junction_states:
         prolog_code += f"{JUNCTION_STATE_PREFIX}({state}).\n"
 
-    for entry_pseudostate in entry_pseudostates:
+    for entry_pseudostate in entry_states:
         for transition in transitions:
             if transition.source == entry_pseudostate:
                 prolog_code += f"{ENTRY_PSEUDOSTATE_PREFIX}({entry_pseudostate}, {transition.destination}).\n"
                 transitions.remove(transition)
                 break
         
-    for exit_pseudostate in exit_pseudostates:
+    for exit_pseudostate in exit_states:
         prolog_code += f"{EXIT_PSEUDOSTATE_PREFIX}({exit_pseudostate}, {states[exit_pseudostate].superstate}).\n"
 
     for on_entry_action_state in on_entry_actions_list:
