@@ -4,8 +4,7 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from model.state import State
-from model.pseudostate import PseudostateType, Pseudostate
+from model.states import State, PseudostateType, Pseudostate
 from model.transition import Transition
 from model.ega_dict import EgaDict
 from puml.puml_constants import *
