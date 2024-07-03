@@ -5,12 +5,7 @@ root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
 from model.states import State, Pseudostate, PseudostateType
-from model.transition import Transition
-from model.event import Event
-from model.guard import Guard
-from model.action import Action
-from model.proc import Proc
-from model.ega_dict import EgaDict
+from model.transition import Transition, Event, Guard, Action, Proc, EgaDict
 from prolog.query import *
 from prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
 from src.util.parse import get_params
