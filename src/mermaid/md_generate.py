@@ -4,9 +4,8 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from model.state import State
-from model.transition import Transition
-from model.ega_dict import EgaDict
+from model.states import State
+from model.transition import Transition, EgaDict
 from mermaid.md_constants import *
 
 def generate_mermaid(states: dict[str: State], transitions: set[Transition], ega_dict, legend: bool = False) -> str:
