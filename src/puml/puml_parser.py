@@ -4,8 +4,8 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from src.model.states import Pseudostate, PseudostateType, State
-from src.model.transition import Transition, Event, Guard, Action
+from model.states import Pseudostate, PseudostateType, State
+from model.transition import Transition, Event, Guard, Action
 from src.puml.puml_constants import *
 from src.util.logger_config import logger
 
