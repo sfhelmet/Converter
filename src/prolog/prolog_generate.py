@@ -4,7 +4,8 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from model.states import Pseudostate, PseudostateType, State
+from model.pseudostate import Pseudostate, PseudostateType
+from model.state import State
 from model.transition import Transition
 from model.action import Action
 from prolog.prolog_constants import *

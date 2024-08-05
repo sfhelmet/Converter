@@ -4,8 +4,9 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from model.states import State, Pseudostate, PseudostateType
+from model.state import State
 from model.transition import Transition
+from model.pseudostate import Pseudostate, PseudostateType
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
