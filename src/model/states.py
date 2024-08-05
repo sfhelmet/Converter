@@ -43,7 +43,6 @@ class State(StateInterface):
         self.region = None
         self.entries = set()
         self.exits = set()
-        self.substates = set()
         self.on_exit_actions = []
         self.on_entry_actions = []
         self.do_actions = []
@@ -132,11 +131,18 @@ class Region(StateInterface):
         return f"Region({self.name})"
     
 class CompositeState(State):
-    def __init__(self, name: str) -> None:
-        super().__init__(name)
+    def __init__(self, name: str = None, state_instance: State = None) -> None:
+        if state_instance:
+            # Copy constructor logic
+            super().__init__(state_instance.name)
+            self.__dict__.update(state_instance.__dict__)
+            self.entry_pseudostate: Optional[str] = None
+        else:
+            super().__init__(name)
+            
         self.entry_pseudostate: Optional[str] = None
         self.exit_pseudostate: Optional[str] = None
-        self.substates: Set[State] = set()
+        self.substates: Set[str] = set()
         self.transitions: Set[Transition] = set()
         self.regions: Set[Region] = set()
 

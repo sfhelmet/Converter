@@ -4,11 +4,13 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from model.states import State, Pseudostate, PseudostateType
-from model.transition import Transition, Event, Guard, Action, Proc, EgaDict
-from prolog.query import *
-from prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
+from src.prolog.query import file_load
+from src.model.states import CompositeState, State, Pseudostate, PseudostateType, StateInterface, Region
+from src.model.transition import Transition, Event, Guard, Action, Proc, EgaDict
+from src.prolog.query import *
+from src.prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
 from src.util.parse import get_params
+from typing import Dict, Set
 
 from src.util.logger_config import logger
 
@@ -18,10 +20,12 @@ action_counter = 1
 action_dict = {}
 guard_dict = {}
 event_dict = {}
-def parse_prolog(legend: bool = False):
+
+def parse_prolog(path: str, legend: bool = False):
+    file_load(path)
     global event_counter, event_dict, guard_counter, action_counter, guard_dict, action_dict
     logger.debug("Reading Prolog File")
-    states = {}
+    states: Dict[str, StateInterface] = {}
     states_list = [x["Name"] for x in get_state("Name")]
     choices_list = [x["Name"] for x in get_choice("Name")]
     junctions_list = [x["Name"] for x in get_junction("Name")]
@@ -35,19 +39,17 @@ def parse_prolog(legend: bool = False):
     for junction_name in junctions_list: 
         states[junction_name] = (Pseudostate(junction_name, PseudostateType.JUNCTION))
 
-    transitions = set()
+    transitions: Dict[str, Transition] = {}
     transitions_list = get_transition("X", "Y", "E", "G", "A")
 
     region_list = get_region("Sup", "Region")
-    region_count = {}
-    regions = set()
+    regions: Dict[str, Region] = {}
 
-    for region_object in region_list:
-        sup = region_object["Sup"]
-        region = region_object["Region"]
+    # for region_object in region_list:
+    #     sup = region_object["Sup"]
+    #     region = region_object["Region"]
 
-        region_count[sup] = region_count.get(sup, 0) + 1
-        regions.add(region)
+    #     # regions[]
 
     superstate_pairs = get_substate("Superstate", "Substate")
     for pair in superstate_pairs:
@@ -55,6 +57,7 @@ def parse_prolog(legend: bool = False):
         sub = pair["Substate"]
         if sub not in states:
             states[sub] = State(sub)
+            states[sub].superstate = sup
         if sup in regions:
             states[sub].region = sup[-1]
             superstate_name = sup.split('_')[0]
@@ -65,13 +68,14 @@ def parse_prolog(legend: bool = False):
             states_set.add(sub)
             states[superstate_name].substates[sup[-1]] = states_set
         else:
-            states_set = states[sup].substates.get("1", set([sub]))
-            states_set.add(sub)
-            states[sup].substates["1"] = states_set
-            states[sub].superstate = sup
+            if type(states[sup]) != CompositeState:
+                states[sup] = CompositeState(state_instance=states[sup])
+            states[sup].substates.add(sub)
+            
 
-    for region_name in region_count:
-        states[region_name].region_count = region_count[region_name]
+
+    # for region_name in region_count:
+    #     states[region_name].region_count = region_count[region_name]
 
     for transition in transitions_list:
         src = transition["X"]
@@ -95,22 +99,29 @@ def parse_prolog(legend: bool = False):
         else:
             states[states[src].superstate].transitions.add(new_transitions)    
 
-    final_states = get_final("X")
+    final_states = [x["X"] for x in get_final("X")]
+    
     for final_state in final_states:
-        states[final_state["X"]].is_final = True
+        new_final_state = Pseudostate(final_state, PseudostateType.FINAL)
+        new_final_state.superstate = states[final_state].superstate
+        states[final_state] = new_final_state
 
     initial_states = [x["X"] for x in get_initial("X")]
-    i = 1
-    for initial_state in initial_states:
-        states[initial_state].is_initial = True
-        superstates = [x["Sup"] for x in get_substate("Sup", initial_state)]
-        if len(superstates) == 0:
-            transitions.add(Transition(f"__INIT{i}", initial_state))
+    for i, initial_state in enumerate(initial_states):
+        
+        new_initial_state = Pseudostate(initial_state, PseudostateType.INITIAL)
+        new_initial_state.superstate = states[initial_state].superstate
+        states[initial_state] = new_initial_state
+
+        # State should only have 1 superstate
+        superstates_list = [x["Sup"] for x in get_substate("Sup", initial_state)]
+        superstate = None if not superstates_list else superstates_list[0]
+
+        if not superstate:
+            transitions[initial_state] = Transition(f"__INIT{i}", initial_state)
         else:
-            if superstates[0] not in states:
-                continue
-            states[superstates[0]].transitions.add(Transition(f"__INIT{i}_{superstates[0]}", initial_state))
-        i += 1
+            states[superstate].transitions[initial_state] = Transition(f"__INIT{i}_{superstate}", initial_state)
+
 
     entries = get_entry_pseudostate("Entry", "Substate")
     for entry in entries:

@@ -1,4 +1,3 @@
-from prolog.query import file_load
 from puml.puml_parser import parse_plantuml
 from puml.puml_generate import generate_plantuml
 from prolog.prolog_parser import parse_prolog
@@ -45,8 +44,7 @@ def main():
     fsm = FiniteStateMachine()
 
     if input_language == "pl":
-        file_load(input_file)
-        states, transitions, ega_dict = parse_prolog(legend)
+        states, transitions, ega_dict = parse_prolog(input_file, legend)
     elif input_language == "puml":
         states, transitions = parse_plantuml(input_file)
     elif input_language == "md":
