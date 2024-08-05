@@ -5,7 +5,8 @@ root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
 from model.states import State, PseudostateType, Pseudostate
-from model.transition import Transition, EgaDict
+from model.transition import Transition
+from model.ega_dict import EgaDict
 from puml.puml_constants import *
 
 def generate_plantuml(states: dict[str: State], transitions: set[Transition], ega_dict, legend: bool = False) -> str:
