@@ -10,7 +10,7 @@ from prolog.query import *
 from prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
 from src.util.parse import get_params
 
-from src.util.logger_config import logger
+from src.logger_config import logger
 
 event_counter = 1
 guard_counter = 1

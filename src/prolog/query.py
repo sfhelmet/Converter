@@ -6,7 +6,7 @@ sys.path.append(root_path)
 
 from pyswip import Prolog
 
-from src.util.logger_config import logger
+from src.logger_config import logger
 
 prolog = Prolog()
 

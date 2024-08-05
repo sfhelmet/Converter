@@ -7,7 +7,7 @@ sys.path.append(root_path)
 from model.states import Pseudostate, PseudostateType, State
 from model.transition import Transition, Event, Guard, Action
 from src.puml.puml_constants import *
-from src.util.logger_config import logger
+from src.logger_config import logger
 
 ARROWSTICK_TYPE = {"-", "l", "r", "u", "d"}
 

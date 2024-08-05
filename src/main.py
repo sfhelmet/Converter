@@ -5,10 +5,9 @@ from prolog.prolog_parser import parse_prolog
 from prolog.prolog_generate import generate_prolog
 from mermaid.md_parser import parse_mermaid
 from mermaid.md_generate import generate_mermaid
-from model.finite_state_machine import FiniteStateMachine
-from src.util.exceptions import InvalidUsageError, NotSupportedError
+from exceptions import InvalidUsageError, NotSupportedError
 
-from src.util.logger_config import logger
+from logger_config import logger
 import sys
 
 def main():
@@ -19,7 +18,6 @@ def main():
     input_file = None # "./resources/PUML/output.puml"
     output_file = None # "./resources/db/output.pl"
     legend = False
-
     if sys.argv[1].startswith('-') and len(sys.argv) == 4:
         flag_str = sys.argv[1]
         input_file = sys.argv[2]
@@ -42,10 +40,8 @@ def main():
     sub_code = None
     ega_dict = None
 
-    fsm = FiniteStateMachine()
-
     if input_language == "pl":
-        file_load(input_file)
+        file_load(input_file) # Load prolog file
         states, transitions, ega_dict = parse_prolog(legend)
     elif input_language == "puml":
         states, transitions = parse_plantuml(input_file)
