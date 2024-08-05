@@ -5,7 +5,6 @@ root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
 from model.state import State
-from model.pseudostate import PseudostateType, Pseudostate
 from model.transition import Transition
 from model.ega_dict import EgaDict
 from puml.puml_constants import *
@@ -15,20 +14,18 @@ def generate_plantuml(states: dict[str: State], transitions: set[Transition], eg
     plantuml_code = f"{START_PUML}\n\n"
     # Generate States
     for state in states:
-        state_obj = states[state]
-        if state_obj.superstate:
+        if states[state].superstate:
             continue
         
-        elif type(state_obj) != Pseudostate and (state_obj.entries or state_obj.exits or state_obj.substates):
-            plantuml_code += generate_substates(state_obj, states, legend)
+        elif states[state].entries or states[state].exits or states[state].substates:
+            plantuml_code += generate_substates(states[state], states, legend)
 
         else:
-            # plantuml_code += f"{STATE_STRING} {states[state].name}" if not states[state].is_final else ""
-            plantuml_code += f"{STATE_STRING} {state_obj.name}"
-            if type(state_obj) == Pseudostate and state_obj.type == PseudostateType.CHOICE:
+            plantuml_code += f"{STATE_STRING} {states[state].name}" if not states[state].is_final else ""
+            if states[state].choice:
                 plantuml_code += f" <<{CHOICE_STEREOTYPE}>>"
 
-            elif type(state_obj) == Pseudostate and state_obj.type == PseudostateType.JUNCTION:
+            elif states[state].junction:
                 plantuml_code += f" <<{JUNCTION_STEREOTYPE}>>"
             
             elif internal_transitions := states[state].internal_transitions:
@@ -82,16 +79,16 @@ def generate_transitions(transition, states, legend: bool):
     return plantuml_code
                 
 
-def generate_substates(state_obj: State, states: dict[str:State], legend: bool, indent =  0) -> str:
+def generate_substates(state: State, states: dict[str:State], legend: bool, indent =  0) -> str:
     TAB = "\t"
     indent_str = TAB * indent
     substate_code = ""
-    on_entry_actions = state_obj.on_entry_actions
-    do_actions = state_obj.do_actions
-    on_exit_actions = state_obj.on_exit_actions
-    internal_transitions = state_obj.internal_transitions
+    on_entry_actions = state.on_entry_actions
+    do_actions = state.do_actions
+    on_exit_actions = state.on_exit_actions
+    internal_transitions = state.internal_transitions
     if on_exit_actions or on_entry_actions or do_actions or internal_transitions:
-        substate_code += f'{indent_str}{state_obj.name}: '
+        substate_code += f'{indent_str}{state.name}: '
 
         if on_entry_actions:
             substate_code += f'{NoteType.ON_ENTRY.value}: {on_entry_actions[0].type} {on_entry_actions[0].parameter}'
@@ -111,34 +108,34 @@ def generate_substates(state_obj: State, states: dict[str:State], legend: bool, 
                 substate_code += f'; {on_exit_actions[i].type} {on_exit_actions[i].parameter}'
             substate_code += '\\n'
 
-        if internal_transitions := state_obj.internal_transitions:
+        if internal_transitions := state.internal_transitions:
             for internal_transition in internal_transitions:
                 substate_code += f"{NoteType.INTERNAL_TRANSITION.value}: {generate_ega(internal_transition, legend)}\\n"
 
         substate_code += '\n'
-    if not state_obj.is_final:
-        substate_code += f"{indent_str}{STATE_STRING} {state_obj.name}"      
-    if type(state_obj) == Pseudostate and state_obj.type == PseudostateType.CHOICE:
+    if not state.is_final:
+        substate_code += f"{indent_str}{STATE_STRING} {state.name}"      
+    if state.choice == True:
         substate_code += f"<<{CHOICE_STEREOTYPE}>>"
 
-    elif type(state_obj) == Pseudostate and state_obj.type == PseudostateType.JUNCTION:
+    elif state.junction == True:
         substate_code += f"<<{JUNCTION_STEREOTYPE}>>"
     
-    if state_obj.entries or state_obj.exits or state_obj.substates or state_obj.region_count > 1:
+    if state.entries or state.exits or state.substates or state.region_count > 1:
         substate_code += " {\n"
 
-        if state_obj.region_count <= 1:
-            for entry in state_obj.entries:
+        if state.region_count <= 1:
+            for entry in state.entries:
                 substate_code += f"{indent_str}{TAB}{STATE_STRING} {entry} <<{ENTRY_STEREOTYPE}>>\n"
-            for exit in state_obj.exits:
+            for exit in state.exits:
                 substate_code += f"{indent_str}{TAB}{STATE_STRING} {exit} <<{EXIT_STEREOTYPE}>>\n"
-        for i, region in enumerate(state_obj.substates):
-            for child in state_obj.substates[region]:
+        for i, region in enumerate(state.substates):
+            for child in state.substates[region]:
                 substate_code += generate_substates(states[child], states, legend, indent + 1)
-            if i != len(state_obj.substates) - 1:
+            if i != len(state.substates) - 1:
                 substate_code += f"{indent_str}{TAB}{REGION_SEPERATOR_VERTICAL}\n"
 
-        for transition in state_obj.transitions:
+        for transition in state.transitions:
             substate_code += indent_str + TAB + generate_transitions(transition, states, legend) + "\n"
 
         substate_code += indent_str + "}\n"

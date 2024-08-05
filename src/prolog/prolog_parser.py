@@ -6,7 +6,6 @@ sys.path.append(root_path)
 
 from model.state import State
 from model.transition import Transition
-from model.pseudostate import Pseudostate, PseudostateType
 from model.event import Event
 from model.guard import Guard
 from model.action import Action
@@ -35,11 +34,13 @@ def parse_prolog(legend: bool = False):
     for state in states_list:
         states[state] = (State(state))
 
-    for choice_name in choices_list:
-        states[choice_name] = (Pseudostate(choice_name, PseudostateType.CHOICE))
+    for choice in choices_list:
+        states[choice] = (State(choice))
+        states[choice].choice = True
 
-    for junction_name in junctions_list: 
-        states[junction_name] = (Pseudostate(junction_name, PseudostateType.JUNCTION))
+    for junction in junctions_list: 
+        states[junction] = (State(junction))
+        states[junction].junction = True
 
     transitions = set()
     transitions_list = get_transition("X", "Y", "E", "G", "A")
