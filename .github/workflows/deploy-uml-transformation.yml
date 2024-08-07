@@ -39,8 +39,7 @@ jobs:
       - name: Prepare artifact for deployment
         run: |
           mkdir release
-          cp -r !(release|venv) release/
-          cp -r venv release/
+          rsync -av --exclude='release' --exclude='venv' . release/
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
