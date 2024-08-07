@@ -5,9 +5,9 @@ from prolog.prolog_parser import parse_prolog
 from prolog.prolog_generate import generate_prolog
 from mermaid.md_parser import parse_mermaid
 from mermaid.md_generate import generate_mermaid
-from exceptions import InvalidUsageError, NotSupportedError
+from src.util.exceptions import InvalidUsageError, NotSupportedError
 
-from logger_config import logger
+from src.util.logger_config import logger
 import sys
 
 def main():

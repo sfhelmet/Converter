@@ -20,4 +20,3 @@ EVENT_PREFIX = "event"
 ACTION_PREFIX = "action"
 PROCEDURE_PREFIX = "proc"
 INTERNAL_TRANSITION_PREFIX = "internal_transition"
-
