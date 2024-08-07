@@ -38,10 +38,9 @@ jobs:
 
       - name: Prepare artifact for deployment
         run: |
-          mkdir -p release
-          cp -r * release/
-          cp -r .venv release/
-          rm -rf release/.venv
+          mkdir release
+          cp -r !(release|venv) release/
+          cp -r venv release/
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -77,6 +76,6 @@ jobs:
         with:
           app-name: 'uml-transform'
           slot-name: 'Production'
-          package: 'release' # Point to the unzipped directory
+          package: './release' # Point to the unzipped directory
           scm-do-build-during-deployment: true
           enable-oryx-build: true
