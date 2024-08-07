@@ -8,3 +8,7 @@ Pipfile.lock
 settings.json
 *.log
 resources/Mermaid/*
+
+.python_packages
+__pycache__
+.venv
