@@ -1,8 +1,9 @@
-azure-functions==1.20.0
-exceptiongroup==1.2.2
-iniconfig==2.0.0
-packaging==24.1
-pluggy==1.5.0
-pyswip==0.2.10
+-i https://pypi.org/simple
+azure.functions==1.20.0
+exceptiongroup==1.2.2 ; python_version < '3.11'
+iniconfig==2.0.0 ; python_version >= '3.7'
+packaging==24.1 ; python_version >= '3.8'
+pluggy==1.5.0 ; python_version >= '3.8'
+git+https://github.com/yuce/pyswip@0698d0911d576fe75bb0a98f4d71c4acee8cbb92#egg=pyswip
 pytest==8.3.2
-tomli==2.0.1
+tomli==2.0.1 ; python_version < '3.11'
