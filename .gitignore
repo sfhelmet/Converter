@@ -2,7 +2,7 @@
 *.pyc
 Pipfile.lock
 *.puml
-*.pl
+*/db/*.pl
 *.xml
 *.iml
 settings.json
