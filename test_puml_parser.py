@@ -1,5 +1,5 @@
 import pytest
-from src.puml.puml_parser import __parse_ega
+from puml_parser import __parse_ega
 
 @pytest.mark.unit
 def test_parse_ega():

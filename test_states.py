@@ -1,10 +1,10 @@
 import pytest
-from src.prolog.prolog_parser import parse_prolog
-from src.model.states import Pseudostate, PseudostateType
+from prolog_parser import parse_prolog
+from states import Pseudostate, PseudostateType
 
-from src.prolog.query import get_state, get_initial, get_final, get_substate
+from query import get_state, get_initial, get_final, get_substate
 
-STATES_PATH = "test/resources/state_test.pl"
+STATES_PATH = "state_test.pl"
 
 @pytest.fixture(scope='module')
 def parsed_prolog():
