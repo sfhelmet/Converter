@@ -6,7 +6,7 @@ sys.path.append(root_path)
 
 from states import Pseudostate, PseudostateType, State
 from transition import Transition, Event, Guard, Action
-from puml_constants import *
+from constants import *
 from logger_config import logger
 
 ARROWSTICK_TYPE = {"-", "l", "r", "u", "d"}

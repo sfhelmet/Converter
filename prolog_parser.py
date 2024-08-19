@@ -8,7 +8,7 @@ from query import file_load
 from states import CompositeState, State, Pseudostate, PseudostateType, StateInterface, Region
 from transition import Transition, Event, Guard, Action, Proc, EgaDict
 from query import *
-from prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
+from constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
 from parse import get_params
 from typing import Dict, Set
 

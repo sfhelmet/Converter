@@ -6,7 +6,7 @@ sys.path.append(root_path)
 
 from states import State
 from transition import Transition, EgaDict
-from md_constants import *
+from constants import *
 
 def generate_mermaid(states: dict[str: State], transitions: set[Transition], ega_dict, legend: bool = False) -> str:
     event_dict, guard_dict, action_dict = ega_dict.get_dicts()

@@ -6,7 +6,7 @@ sys.path.append(root_path)
 
 from states import Pseudostate, PseudostateType, State
 from transition import Transition, Action
-from prolog_constants import *
+from constants import *
 
 def generate_prolog(states: dict[str:State], transitions: set[Transition]) -> str:
     prolog_code = ""
