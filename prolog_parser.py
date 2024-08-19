@@ -4,15 +4,15 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from src.prolog.query import file_load
-from src.model.states import CompositeState, State, Pseudostate, PseudostateType, StateInterface, Region
-from src.model.transition import Transition, Event, Guard, Action, Proc, EgaDict
-from src.prolog.query import *
-from src.prolog.prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
-from src.util.parse import get_params
+from query import file_load
+from states import CompositeState, State, Pseudostate, PseudostateType, StateInterface, Region
+from transition import Transition, Event, Guard, Action, Proc, EgaDict
+from query import *
+from prolog_constants import NIL, BYTES_TYPE_AS_STRING, UTF8_CONSTANT
+from parse import get_params
 from typing import Dict, Set
 
-from src.util.logger_config import logger
+from logger_config import logger
 
 event_counter = 1
 guard_counter = 1

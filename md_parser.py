@@ -4,11 +4,11 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from model.states import State
-from model.transition import Transition, Event, Guard, Action
+from states import State
+from transition import Transition, Event, Guard, Action
 
-from src.mermaid.md_constants import *
-from src.util.logger_config import logger
+from md_constants import *
+from logger_config import logger
 
 ARROWSTICK_TYPE = {"-", "l", "r", "u", "d"}
 

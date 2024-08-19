@@ -1,7 +1,7 @@
-from .states import StateInterface
-from .transition import EgaDict, Transition
+from states import StateInterface
+from transition import EgaDict, Transition
 from typing import Dict, Set, Callable, Tuple
-from src.prolog.prolog_parser import parse_prolog
+from prolog_parser import parse_prolog
 
 class FiniteStateMachine():
     def __init__(self) -> None:

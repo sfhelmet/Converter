@@ -1,13 +1,13 @@
-from prolog.query import file_load
-from puml.puml_parser import parse_plantuml
-from puml.puml_generate import generate_plantuml
-from prolog.prolog_parser import parse_prolog
-from prolog.prolog_generate import generate_prolog
-from mermaid.md_parser import parse_mermaid
-from mermaid.md_generate import generate_mermaid
-from src.util.exceptions import InvalidUsageError, NotSupportedError
+from query import file_load
+from puml_parser import parse_plantuml
+from puml_generate import generate_plantuml
+from prolog_parser import parse_prolog
+from prolog_generate import generate_prolog
+from md_parser import parse_mermaid
+from md_generate import generate_mermaid
+from exceptions import InvalidUsageError, NotSupportedError
 
-from src.util.logger_config import logger
+from logger_config import logger
 import sys
 
 def main():

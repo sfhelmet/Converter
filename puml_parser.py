@@ -4,10 +4,10 @@ import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(root_path)
 
-from src.model.states import Pseudostate, PseudostateType, State
-from src.model.transition import Transition, Event, Guard, Action
-from src.puml.puml_constants import *
-from src.util.logger_config import logger
+from states import Pseudostate, PseudostateType, State
+from transition import Transition, Event, Guard, Action
+from puml_constants import *
+from logger_config import logger
 
 ARROWSTICK_TYPE = {"-", "l", "r", "u", "d"}
 
