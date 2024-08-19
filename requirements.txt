@@ -1,9 +1,23 @@
 -i https://pypi.org/simple
 azure.functions==1.20.0
+blinker==1.8.2 ; python_version >= '3.8'
+click==8.1.7 ; python_version >= '3.7'
+cloudevents==1.11.0
+deprecation==2.1.0
 exceptiongroup==1.2.2 ; python_version < '3.11'
+flask==3.0.3 ; python_version >= '3.8'
+functions-framework==3.8.1
+gunicorn==23.0.0 ; platform_system != 'Windows'
+importlib-metadata==8.3.0 ; python_version < '3.10'
 iniconfig==2.0.0 ; python_version >= '3.7'
+itsdangerous==2.2.0 ; python_version >= '3.8'
+jinja2==3.1.4 ; python_version >= '3.7'
+markupsafe==2.1.5 ; python_version >= '3.7'
 packaging==24.1 ; python_version >= '3.8'
 pluggy==1.5.0 ; python_version >= '3.8'
-git+https://github.com/yuce/pyswip@master#egg=pyswip
+git+https://github.com/yuce/pyswip@1b036c1db2dd90005d1744729125c696c58f1c4a#egg=pyswip
 pytest==8.3.2
 tomli==2.0.1 ; python_version < '3.11'
+watchdog==4.0.2 ; python_version >= '3.8'
+werkzeug==3.0.3 ; python_version >= '3.8'
+zipp==3.20.0 ; python_version >= '3.8'

@@ -7,6 +7,7 @@ name = "pypi"
 pyswip = {ref = "master", git = "https://github.com/yuce/pyswip"}
 pytest = "*"
 "azure.functions" = "*"
+functions-framework = "*"
 
 [dev-packages]
 
