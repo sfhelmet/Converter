@@ -24,11 +24,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y swi-prolog
 
-    # - name: Set SWI-Prolog environment variables
-    #   run: |
-    #     echo "/usr/lib/swi-prolog" >> $GITHUB_ENV
-    #     echo "/usr/lib/swi-prolog/bin" >> $GITHUB_ENV
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
