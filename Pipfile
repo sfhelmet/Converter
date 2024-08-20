@@ -8,6 +8,7 @@ pyswip = {ref = "master", git = "https://github.com/yuce/pyswip"}
 pytest = "*"
 "azure.functions" = "*"
 functions-framework = "*"
+flask = "*"
 
 [dev-packages]
 

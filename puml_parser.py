@@ -11,72 +11,70 @@ from logger_config import logger
 
 ARROWSTICK_TYPE = {"-", "l", "r", "u", "d"}
 
-def parse_plantuml(puml_file): 
+def parse_plantuml(code): 
     states: dict[str, State] = {}
     transitions: set[Transition] = set()
     superstate_stack: list[str] = []
     region_stack: list[int] = [1]
 
-    instate_actions: dict[str, dict[str, list[str] | set[str]]] = {}
-    with open(puml_file, 'r') as file:
-        
-        for line in file:
-            if line := line.strip():                
-                if line.startswith(END_PUML):
-                    logger.debug("End of PlantUML file Found")
-                    break
-                
-                elif line.startswith(START_PUML):
-                    logger.debug("Start of PlantUML file Found")
+    instate_actions: dict[str, dict[str, list[str] | set[str]]] = {}        
+    for line in code.split('\n '): # TODO: temporary solution
+        if line := line.strip():                
+            if line.startswith(END_PUML):
+                logger.debug("End of PlantUML file Found")
+                break
+            
+            elif line.startswith(START_PUML):
+                logger.debug("Start of PlantUML file Found")
+                continue
+            
+            if line.isspace():
+                continue
+            
+            elif line.startswith("'") or line.startswith("note"):
+                continue
+
+            elif line == REGION_SEPERATOR_HORIZONTAL or line == REGION_SEPERATOR_VERTICAL:
+                region_stack[-1] += 1
+                states[superstate_stack[-1]].region_count = str(int(states[superstate_stack[-1]].region_count) + 1)
+                continue
+
+            elif line.startswith('}'):
+                superstate_stack.pop()
+                region_stack.pop()
+                continue
+
+            elif line.startswith(f'{STATE_STRING} '):
+                state_name = line.split()[1].lower() if line.split()[1][-1] != ":" else line.split()[1][:-1].lower()
+
+                # "state" can be a state name
+                if state_name[0] == "-":
+                    logger.warning('state name "state" found')
+                    transitions.add(__parse_transition(line, states, superstate_stack, region_stack))
                     continue
-                
-                if line.isspace():
-                    continue
-                
-                elif line.startswith("'") or line.startswith("note"):
-                    continue
 
-                elif line == REGION_SEPERATOR_HORIZONTAL or line == REGION_SEPERATOR_VERTICAL:
-                    region_stack[-1] += 1
-                    states[superstate_stack[-1]].region_count = str(int(states[superstate_stack[-1]].region_count) + 1)
-                    continue
-
-                elif line.startswith('}'):
-                    superstate_stack.pop()
-                    region_stack.pop()
-                    continue
-
-                elif line.startswith(f'{STATE_STRING} '):
-                    state_name = line.split()[1].lower() if line.split()[1][-1] != ":" else line.split()[1][:-1].lower()
-
-                    # "state" can be a state name
-                    if state_name[0] == "-":
-                        logger.warning('state name "state" found')
-                        transitions.add(__parse_transition(line, states, superstate_stack, region_stack))
-                        continue
-
-                    states[state_name] = __create_state(line, state_name, states, instate_actions, superstate_stack, region_stack)
-                
-                elif (state_name := line[:line.find(":")].strip().lower()) in states and ">" not in line and ":" in line:
-                    entry_actions, do_actions, exit_actions, internal_transitions_set = __parse_state_behavior(line, state_name.lower())
-                    if state_name in states:
-                        states[state_name].on_entry_actions = entry_actions
-                        states[state_name].do_actions = do_actions
-                        states[state_name].on_exit_actions = exit_actions
-                        states[state_name].internal_transitions = internal_transitions_set
-                    else:
-                        instate_actions[state_name] = {"on_entry": entry_actions, "do_action": do_actions, "on_exit": exit_actions, "internal_transitions": internal_transitions_set}
-
-                    logger.debug(f'State Behavior of "{state_name}" created')
-
+                states[state_name] = __create_state(line, state_name, states, instate_actions, superstate_stack, region_stack)
+            
+            elif (state_name := line[:line.find(":")].strip().lower()) in states and ">" not in line and ":" in line:
+                entry_actions, do_actions, exit_actions, internal_transitions_set = __parse_state_behavior(line, state_name.lower())
+                if state_name in states:
+                    states[state_name].on_entry_actions = entry_actions
+                    states[state_name].do_actions = do_actions
+                    states[state_name].on_exit_actions = exit_actions
+                    states[state_name].internal_transitions = internal_transitions_set
                 else:
-                    new_transition = __parse_transition(line, states, superstate_stack, region_stack)
-                    if new_transition:
-                        if len(superstate_stack) != 0:
-                            states[superstate_stack[-1]].transitions.add(new_transition)
-                            transitions.add(new_transition)  
-                        else:
-                            transitions.add(new_transition)         
+                    instate_actions[state_name] = {"on_entry": entry_actions, "do_action": do_actions, "on_exit": exit_actions, "internal_transitions": internal_transitions_set}
+
+                logger.debug(f'State Behavior of "{state_name}" created')
+
+            else:
+                new_transition = __parse_transition(line, states, superstate_stack, region_stack)
+                if new_transition:
+                    if len(superstate_stack) != 0:
+                        states[superstate_stack[-1]].transitions.add(new_transition)
+                        transitions.add(new_transition)  
+                    else:
+                        transitions.add(new_transition)         
     return states, transitions
 
 def __parse_state_behavior(line: str, state_name: str):
