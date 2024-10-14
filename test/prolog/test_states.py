@@ -56,6 +56,8 @@ def test_parse_substate(parsed_prolog):
 
     states, _, _ = parsed_prolog
 
+    assert false
+
 
 
 
